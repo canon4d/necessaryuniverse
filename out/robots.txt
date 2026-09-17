@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+
+Host: https://necessaryuniverse.com
+Sitemap: https://necessaryuniverse.com/sitemap.xml
