@@ -79,6 +79,9 @@ export default function Header() {
             <Link href="/argument" aria-current={isActive('/argument') ? 'page' : undefined}>
               Argument
             </Link>
+            <Link href="/podcasts" aria-current={isActive('/podcasts') ? 'page' : undefined}>
+              Listen
+            </Link>
           </nav>
 
           <div className="hdr-tools">
