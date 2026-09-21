@@ -100,6 +100,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link href="/argument">The argument in one page</Link>
                   </li>
+                  <li>
+                    <Link href="/podcasts">Listen to the series</Link>
+                  </li>
                 </ul>
               </div>
 
