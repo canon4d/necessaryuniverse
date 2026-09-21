@@ -6,11 +6,11 @@ import PodcastPlayer from '@/components/PodcastPlayer'
 export const metadata: Metadata = {
   title: 'Listen',
   description:
-    'The three papers of the Necessary Universe series, read aloud as podcast episodes: Shape of Reality, The Klein Block, and Twisted Dynamics on the Klein Block.',
+    'The three papers of the Necessary Universe series, audio deep dive as podcast episodes: Shape of Reality, The Klein Block, and Twisted Dynamics on the Klein Block.',
   alternates: { canonical: '/podcasts' },
   openGraph: {
     title: `Listen — ${SITE.name}`,
-    description: 'The three papers of the Necessary Universe series, read aloud as podcast episodes.',
+    description: 'The three papers of the Necessary Universe series, audio deep dive as podcast episodes.',
     url: '/podcasts',
     type: 'website',
   },
@@ -41,7 +41,7 @@ export default function PodcastsPage() {
       />
 
       <header className="pp-head shell">
-        <p className="pp-head-kicker">The series, read aloud</p>
+        <p className="pp-head-kicker">The series, audio deep dive</p>
         <h1>Listen to Necessary Universe.</h1>
         <p>
           The same three documents, as three conversations — one per paper, in the order they were
