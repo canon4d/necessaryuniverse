@@ -11,14 +11,14 @@ export type Podcast = Paper & {
 const meta: Record<Paper['id'], { file: string; duration: number; episode: string; blurb: string }> = {
   why: {
     file: '/podcasts/shape-of-reality.m4a',
-    duration: 3002,
+    duration: 2433,
     episode: 'Episode I',
     blurb:
       'A conversation through the three premises and what they force — identity, no brute facts, and the five postulates that follow.',
   },
   what: {
     file: '/podcasts/the-klein-block.m4a',
-    duration: 3396,
+    duration: 2660,
     episode: 'Episode II',
     blurb:
       'Walking the classification theorem that leaves exactly one four-manifold standing, and what that topology costs.',

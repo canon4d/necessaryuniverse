@@ -103,7 +103,7 @@ export default function Home() {
       </section>
 
       <section className="strip shell">
-        <h2 className="strip-h">The shape the argument arrives at</h2>
+        <h2 className="strip-h">The argument's final shape</h2>
         <div className="grid-2">
           <div className="prose-narrow">
             <p>
