@@ -18,7 +18,7 @@ const meta: Record<Paper['id'], { file: string; duration: number; episode: strin
   },
   what: {
     file: '/podcasts/the-klein-block.m4a',
-    duration: 2660,
+    duration: 2656,
     episode: 'Episode II',
     blurb:
       'Walking the classification theorem that leaves exactly one four-manifold standing, and what that topology costs.',
