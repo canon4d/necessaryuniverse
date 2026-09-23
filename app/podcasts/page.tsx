@@ -45,7 +45,7 @@ export default function PodcastsPage() {
         <h1>Listen to Necessary Universe.</h1>
         <p>
           The same three documents, as three conversations — one per paper, in the order they were
-          written to be read. Play one, pause whenever, pick up any of the others.
+          written to be read. Play one, pause whenever, pick up any of the others. This podcast style audio deep dive is generated with Google NotebookLM.
         </p>
       </header>
 
