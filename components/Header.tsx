@@ -9,7 +9,7 @@ import SearchPalette from './SearchPalette'
 function SeriesGlyph() {
   // Brand mark: rounded badge, orbit ring, and the accent line that cuts across it.
   return (
-    <svg className="mark-glyph" viewBox="0 0 32 32" aria-hidden="true">
+    <svg className="mark-glyph" viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <g clipPath="url(#nu-mark-clip)">
         <path
           d="M26 0H6C2.68629 0 0 2.68629 0 6V26C0 29.3137 2.68629 32 6 32H26C29.3137 32 32 29.3137 32 26V6C32 2.68629 29.3137 0 26 0Z"
