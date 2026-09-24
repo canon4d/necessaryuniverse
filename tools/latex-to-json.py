@@ -454,6 +454,7 @@ PAPER_THEOREMS = {
     },
     "how": {
         "theorem": ("Theorem", "thm"), "lemma": ("Lemma", "thm"),
+        "proposition": ("Proposition", "thm"),
         "corollary": ("Corollary", "thm"), "definition": ("Definition", "thm"),
         "remark": ("Remark", "thm"),
         "postulate": ("Physical Postulate", "post"),
@@ -700,8 +701,66 @@ def parse_body(s, ctx, doc, inside=False):
     return blocks
 
 
+def split_align_rows(body: str):
+    """Split an align body on top-level \\\\ (outside braces and nested environments)."""
+    rows, cur, depth, envd, i, n = [], [], 0, 0, 0, len(body)
+    while i < n:
+        c = body[i]
+        if c == "\\":
+            if body.startswith("\\\\", i) and depth == 0 and envd == 0:
+                rows.append("".join(cur)); cur = []
+                i += 2
+                m = re.match(r"\s*\[[^\]]*\]", body[i:])   # optional \\[len] spacing
+                if m:
+                    i += m.end()
+                continue
+            if body.startswith("\\begin{", i):
+                envd += 1
+            elif body.startswith("\\end{", i):
+                envd -= 1
+            cur.append(body[i:i+2]); i += 2; continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+        cur.append(c); i += 1
+    rows.append("".join(cur))
+    return [r for r in rows if r.strip()]
+
+
+def numbered_align_block(body: str, ctx):
+    """LaTeX numbers every row of a plain `align` unless it carries \\nonumber/\\notag.
+    Mirror that: one block, one explicit \\tag per numbered row, so the web
+    equation numbers match the PDF exactly.  KaTeX draws the tags itself."""
+    rows = split_align_rows(body)
+    tagged, plain_rows, nums, anchor = [], [], [], None
+    for r in rows:
+        skip = re.search(r"\\(nonumber|notag)\b", r) is not None
+        lm = re.search(r"\\label\{([^}]*)\}", r)
+        cleaned = clean_math(r)
+        plain_rows.append(cleaned)
+        if skip:
+            tagged.append(cleaned + " \\notag")
+            continue
+        ctx.eqcount += 1
+        num = str(ctx.eqcount)
+        nums.append(num)
+        if anchor is None:
+            anchor = f"eq-{num}"
+        if lm:
+            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": anchor}
+        tagged.append(cleaned + " \\tag{" + num + "}")
+    tex = "\\begin{align}\n" + " \\\\\n".join(tagged) + "\n\\end{align}"
+    copy = "\\begin{aligned}\n" + " \\\\\n".join(plain_rows) + "\n\\end{aligned}"
+    return {"kind": "math", "tex": tex, "copy": copy, "num": None,
+            "nums": nums, "rows": [r for r in plain_rows], "anchor": anchor}
+
+
 def handle_env(env, body, ctx, doc):
     base = env.rstrip("*")
+
+    if env == "align" and doc.pid == "how":
+        return numbered_align_block(body, ctx)
 
     if env in MATH_ENVS or base in ("displaymath",):
         lm = re.search(r"\\label\{([^}]*)\}", body)
@@ -1055,6 +1114,11 @@ def build_index(pid, blocks):
                 out.append({"p": pid, "a": b["anchor"], "k": b["name"], "n": b["num"],
                             "t": plain(b["title"]) if b.get("title") else b["name"],
                             "s": section, "x": excerpt(b["blocks"], 150)})
+            elif k == "math" and b.get("nums"):
+                for n_, r_ in zip(b["nums"], b["rows"]):
+                    out.append({"p": pid, "a": b["anchor"], "k": "Equation", "n": n_,
+                                "t": "Equation " + n_, "s": section,
+                                "x": re.sub(r"\s+", " ", r_.replace("&", "")).strip()[:90]})
             elif k == "math" and b.get("num"):
                 out.append({"p": pid, "a": b["anchor"], "k": "Equation", "n": b["num"],
                             "t": "Equation " + b["num"], "s": section,
