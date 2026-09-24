@@ -708,6 +708,12 @@ sup.fnref a { color: var(--accent); text-decoration: none; font-size: 0.7em; }
   font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
 }
 .refs li:target { background: var(--accent-wash); }
+/* .refs sits inside .column, whose list rules (higher specificity) would otherwise
+   win: they show "(n)" and keep counting from the previous ordered list, so a
+   bibliography of 5 read 6-10. Re-assert the bibliography's own counter. */
+.column .refs ol { counter-reset: ref; }
+.column .refs ol > li { counter-increment: ref; }
+.column .refs ol > li::before { content: '[' counter(ref) ']'; }
 
 /* ------------------------------------------------------- paper footer nav */
 
