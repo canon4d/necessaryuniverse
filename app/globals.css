@@ -97,6 +97,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+main { overflow-x: clip; }
 a { color: inherit; }
 img, svg { max-width: 100%; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
@@ -674,6 +675,7 @@ th:last-child, td:last-child { padding-right: 1rem; }
   transition: opacity 120ms ease, transform 120ms ease, visibility 120ms;
   pointer-events: none; font-style: normal; text-align: left;
 }
+.xref[data-flip] .xref-card { left: auto; right: 0; }
 .xref:hover .xref-card, .xref:focus-within .xref-card {
   opacity: 1; visibility: visible; transform: none;
 }
@@ -1021,12 +1023,12 @@ sup.fnref a { color: var(--accent); text-decoration: none; font-size: 0.7em; }
 .pp-row-play { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; color: var(--ink-2); }
 .pp-row:hover .pp-row-play, .pp-row.is-active .pp-row-play { color: var(--accent); }
 
-.eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 0.9rem; }
-.eq i { display: block; width: 2.5px; background: var(--accent); border-radius: 1px; height: 30%; }
-.eq.is-on i { animation: eq-bounce 900ms ease-in-out infinite; }
-.eq.is-on i:nth-child(1) { animation-delay: -600ms; }
-.eq.is-on i:nth-child(2) { animation-delay: -300ms; }
-.eq.is-on i:nth-child(3) { animation-delay: 0ms; }
+.eqbars { display: inline-flex; align-items: flex-end; gap: 2px; height: 0.9rem; }
+.eqbars i { display: block; width: 2.5px; background: var(--accent); border-radius: 1px; height: 30%; }
+.eqbars.is-on i { animation: eq-bounce 900ms ease-in-out infinite; }
+.eqbars.is-on i:nth-child(1) { animation-delay: -600ms; }
+.eqbars.is-on i:nth-child(2) { animation-delay: -300ms; }
+.eqbars.is-on i:nth-child(3) { animation-delay: 0ms; }
 @keyframes eq-bounce { 0%, 100% { height: 30%; } 50% { height: 100%; } }
 
 @media (max-width: 30rem) {
@@ -1039,5 +1041,5 @@ sup.fnref a { color: var(--accent); text-decoration: none; font-size: 0.7em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eq.is-on i { animation: none; height: 60%; }
+  .eqbars.is-on i { animation: none; height: 60%; }
 }
