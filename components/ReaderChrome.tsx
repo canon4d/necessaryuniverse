@@ -52,5 +52,25 @@ export default function ReaderChrome() {
     return () => document.removeEventListener('click', onClick)
   }, [])
 
+  /* Cross-reference preview cards open to the right of the reference; if that
+     would run past the viewport, flip them to open leftwards instead. */
+  useEffect(() => {
+    function place(e: Event) {
+      const x = (e.target as HTMLElement | null)?.closest<HTMLElement>('.xref')
+      const card = x?.querySelector<HTMLElement>('.xref-card')
+      if (!x || !card) return
+      x.removeAttribute('data-flip')
+      const left = x.getBoundingClientRect().left
+      const w = card.getBoundingClientRect().width
+      if (left + w > document.documentElement.clientWidth - 8) x.setAttribute('data-flip', '')
+    }
+    document.addEventListener('mouseover', place)
+    document.addEventListener('focusin', place)
+    return () => {
+      document.removeEventListener('mouseover', place)
+      document.removeEventListener('focusin', place)
+    }
+  }, [])
+
   return <div className="progress" ref={bar} aria-hidden="true" />
 }

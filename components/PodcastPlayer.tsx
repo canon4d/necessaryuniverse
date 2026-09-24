@@ -29,7 +29,7 @@ function saveProgress(id: string, seconds: number) {
 
 function EqBars({ animate }: { animate: boolean }) {
   return (
-    <span className={`eq${animate ? ' is-on' : ''}`} aria-hidden="true">
+    <span className={`eqbars${animate ? ' is-on' : ''}`} aria-hidden="true">
       <i />
       <i />
       <i />
