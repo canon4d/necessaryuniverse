@@ -822,8 +822,9 @@ def handle_env(env, body, ctx, doc):
     if env == "thebibliography":
         _, k = read_group(body, 0)
         sub = parse_body(body[k:], ctx, doc, inside=True)
-        return [{"kind": "heading", "level": 1, "num": None, "anchor": "references",
-                 "c": [{"t": "text", "v": "References"}], "text": "References"}] + sub
+        # The reader template renders its own "References" section (id="references")
+        # from the `bibliography` list, so no heading block is emitted here.
+        return sub
 
     if env in ("table", "table*", "figure", "figure*", "longtable"):
         _, k = read_optional(body, 0)
@@ -989,9 +990,13 @@ def main():
 
         previews = build_previews(blocks)
         index = build_index(pid, blocks)
+        if bib:   # the reader template's own References section stays searchable
+            index.append({"p": pid, "a": "references", "k": "Section", "n": "",
+                          "t": "References", "s": "References", "x": ""})
 
         stats = {
-            "sections": sum(1 for b in blocks if b.get("kind") == "heading" and b["level"] == 1),
+            "sections": sum(1 for b in blocks if b.get("kind") == "heading" and b["level"] == 1)
+                        + (1 if bib else 0),   # + the template-rendered References section
             "equations": ctx.eqcount,
             "theorems": count_kind(blocks, "theorem"),
             "tables": doc.tablecount,
