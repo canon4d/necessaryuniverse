@@ -20,7 +20,14 @@ export type Tok =
 
 export type Heading = { kind: 'heading'; level: number; num: string | null; anchor: string; c: Tok[]; text: string }
 export type Para = { kind: 'paragraph'; c: Tok[] }
-export type MathBlk = { kind: 'math'; tex: string; num: string | null; anchor?: string | null }
+export type MathBlk = {
+  kind: 'math'; tex: string; num: string | null; anchor?: string | null
+  /** Clean TeX for the Copy button when `tex` carries per-row \tag numbering. */
+  copy?: string
+  /** Row equation numbers when a multi-row align is numbered row by row. */
+  nums?: string[]
+  rows?: string[]
+}
 export type Theorem = {
   kind: 'theorem'; env: string; name: string; num: string; anchor: string
   title: Tok[] | null; blocks: Block[]
