@@ -137,7 +137,7 @@ function block(b: Block, ctx: RenderCtx): React.ReactNode {
             dangerouslySetInnerHTML={{ __html: renderMath(b.tex, true) }}
           />
           <div className="eq-n">{b.num ? `(${b.num})` : ''}</div>
-          <button className="eq-copy" type="button" data-copy-tex={b.tex}>
+          <button className="eq-copy" type="button" data-copy-tex={b.copy ?? b.tex}>
             Copy TeX
           </button>
         </div>
