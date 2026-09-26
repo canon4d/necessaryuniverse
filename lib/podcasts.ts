@@ -11,21 +11,21 @@ export type Podcast = Paper & {
 const meta: Record<Paper['id'], { file: string; duration: number; episode: string; blurb: string }> = {
   why: {
     file: '/podcasts/shape-of-reality.m4a',
-    duration: 2433,
+    duration: 2903,
     episode: 'Episode I',
     blurb:
       'A conversation through the three premises and what they force — identity, no brute facts, and the five postulates that follow.',
   },
   what: {
     file: '/podcasts/the-klein-block.m4a',
-    duration: 2656,
+    duration: 2807,
     episode: 'Episode II',
     blurb:
       'Walking the classification theorem that leaves exactly one four-manifold standing, and what that topology costs.',
   },
   how: {
     file: '/podcasts/twisted-dynamics-on-the-klein-block.m4a',
-    duration: 2908,
+    duration: 2552,
     episode: 'Episode III',
     blurb:
       'Putting fields, fermions and anomalies on the block, and naming the calculations that are still left open.',
