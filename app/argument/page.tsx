@@ -177,31 +177,7 @@ export default function ArgumentPage() {
           )
         })}
       </div>
-
-      <section className="strip shell" style={{ borderTop: '1px solid var(--rule)', borderBottom: 0 }}>
-        <h2 className="strip-h">Where to push</h2>
-        <div className="prose-narrow">
-          <p>
-            The classification theorem in Document II is the most load-bearing and the most
-            checkable: it is ordinary differential topology and stands on Hatcher and
-            Poincaré–Perelman. The step from premises to postulates in Document I is argument, and the
-            paper presents it as such. Document III labels its own status claim by claim.
-          </p>
-          <p>
-            If you want to disagree productively, the three premises and the move from a hump-shaped
-            entropy profile to non-orientability are where the series is most exposed — and the papers
-            name those exposures themselves.
-          </p>
-        </div>
-        <div className="btn-row">
-          <Link className="btn btn-solid" href="/why">
-            Read Document I
-          </Link>
-          <Link className="btn" href="/">
-            Back to {SITE.name}
-          </Link>
-        </div>
-      </section>
+      
     </>
   )
 }
