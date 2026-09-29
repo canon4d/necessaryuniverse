@@ -1,0 +1,1510 @@
+% ============================================================
+% DOCUMENT III: THE DYNAMICAL ENGINE
+% ============================================================
+
+\documentclass[11pt]{article}
+
+% ---------- Engine / typography ----------
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\setmainfont{Noto Serif}
+\setsansfont{Noto Sans}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{microtype}
+\microtypesetup{protrusion=true,expansion=true}
+\usepackage{setspace}
+\setstretch{1.06}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.58em}
+\setlength{\emergencystretch}{4.5em}
+\clubpenalty=10000
+\widowpenalty=10000
+
+% ---------- Page geometry ----------
+\usepackage[
+  a4paper,
+  left=1.00in,
+  right=1.00in,
+  top=0.88in,
+  bottom=0.92in,
+  headheight=22pt,
+  headsep=0.26in,
+  footskip=0.34in
+]{geometry}
+
+% ---------- Mathematics ----------
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{unicode-math}
+\setmathfont{Latin Modern Math}
+
+% ---------- Structure / lists / tables ----------
+\usepackage{enumitem}
+\usepackage{array,booktabs,longtable,tabularx}
+\usepackage{float}
+\setlist{
+  leftmargin=*,
+  itemsep=0.22em,
+  topsep=0.38em,
+  parsep=0pt,
+  partopsep=0pt
+}
+\setlist[enumerate]{labelsep=0.55em}
+\setlist[itemize]{labelsep=0.55em}
+
+% ---------- Color ----------
+\usepackage{xcolor}
+\definecolor{seriesInk}{HTML}{1F2933}
+\definecolor{seriesAccent}{HTML}{8A3B4A}
+\definecolor{seriesSteel}{HTML}{40566F}
+\definecolor{seriesMuted}{HTML}{66727E}
+\definecolor{seriesPaper}{HTML}{F7F4EE}
+\definecolor{seriesRule}{HTML}{C9D0D6}
+
+% ---------- Boxes / drawing ----------
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{tikz}
+
+% ---------- Sectioning ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\sffamily\color{seriesInk}}
+  {\color{seriesAccent}\thesection}
+  {0.72em}
+  {}
+  [\vspace{3pt}{\color{seriesAccent}\titlerule[0.85pt]}]
+\titlespacing*{\section}{0pt}{3.0ex plus .8ex minus .2ex}{1.55ex plus .2ex}
+
+\titleformat{name=\section,numberless}
+  {\normalfont\Large\bfseries\sffamily\color{seriesInk}}
+  {}
+  {0pt}
+  {}
+  [\vspace{3pt}{\color{seriesAccent}\titlerule[0.85pt]}]
+\titlespacing*{name=\section,numberless}{0pt}{3.0ex plus .8ex minus .2ex}{1.55ex plus .2ex}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\sffamily\color{seriesSteel}}
+  {\color{seriesAccent}\thesubsection}
+  {0.68em}
+  {}
+\titlespacing*{\subsection}{0pt}{2.35ex plus .6ex minus .2ex}{0.82ex plus .1ex}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\sffamily\color{seriesSteel}}
+  {\thesubsubsection}
+  {0.62em}
+  {}
+\titlespacing*{\subsubsection}{0pt}{1.8ex plus .4ex minus .2ex}{0.55ex plus .1ex}
+
+\titleformat{name=\subsection,numberless}
+  {\normalfont\large\bfseries\sffamily\color{seriesSteel}}
+  {}
+  {0pt}
+  {}
+\titlespacing*{name=\subsection,numberless}{0pt}{2.35ex plus .6ex minus .2ex}{0.82ex plus .1ex}
+
+\renewcommand{\sectionmark}[1]{\markboth{\thesection\enspace #1}{}}
+\renewcommand{\subsectionmark}[1]{}
+
+% ---------- Theorem infrastructure ----------
+\newtheoremstyle{canonmath}
+  {8pt}{8pt}
+  {\normalfont}
+  {0pt}
+  {\bfseries\sffamily\color{seriesAccent}}
+  {.}
+  {0.55em}
+  {}
+\theoremstyle{canonmath}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newtheoremstyle{canonpostulate}
+  {8pt}{8pt}
+  {\normalfont}
+  {0pt}
+  {\bfseries\sffamily\color{seriesSteel}}
+  {.}
+  {0.55em}
+  {}
+\theoremstyle{canonpostulate}
+\newtheorem{postulate}{Physical Postulate}[section]
+
+\newtheoremstyle{canonclaim}
+  {8pt}{8pt}
+  {\normalfont}
+  {0pt}
+  {\bfseries\sffamily\color{seriesMuted}}
+  {.}
+  {0.55em}
+  {}
+\theoremstyle{canonclaim}
+\newtheorem{structuralclaim}{Structural Claim}[section]
+\newtheorem{assumption}{Modeling Assumption}[section]
+\newtheorem{principle}{Modeling Convention}[section]
+\newtheorem{frameworkdef}{Framework Definition}[section]
+
+\providecommand{\Klein}{\mathcal{K}}
+\providecommand{\M}{\mathcal{M}}
+\providecommand{\R}{\mathbb{R}}
+\providecommand{\Z}{\mathbb{Z}}
+\providecommand{\Ztwo}{\mathbb{Z}_2}
+\providecommand{\Sone}{S^1}
+\providecommand{\Sthree}{S^3}
+\providecommand{\Diff}{\operatorname{Diff}}
+\providecommand{\id}{\mathrm{id}}
+\providecommand{\Pin}{\operatorname{Pin}}
+\providecommand{\Spin}{\operatorname{Spin}}
+\providecommand{\tr}{\operatorname{tr}}
+\providecommand{\Lor}{\mathcal L_{\mathrm{or}}}
+\providecommand{\LX}{L_X}
+\providecommand{\Udeck}{U_F}
+
+% ---------- Navigation / references ----------
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{bookmark}
+\usepackage{orcidlink}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=seriesSteel,
+  citecolor=seriesAccent,
+  urlcolor=seriesAccent,
+  filecolor=seriesSteel,
+  pdftitle={Twisted Dynamics on the Klein Block},
+  pdfauthor={Canon},
+  pdfsubject={Conditional dynamical framework on the Klein Block topology},
+  pdfcreator={LuaLaTeX}
+}
+\urlstyle{same}
+
+\pdfstringdefDisableCommands{%
+  \def\ensuremath#1{#1}%
+  \def\mathrm#1{#1}%
+  \def\mathbf#1{#1}%
+  \def\mathbb#1{#1}%
+  \def\mathcal#1{#1}%
+  \def\eta{eta}%
+  \def\not{not}%
+}
+
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\crefname{remark}{Remark}{Remarks}
+\crefname{postulate}{Postulate}{Postulates}
+\crefname{structuralclaim}{Structural Claim}{Structural Claims}
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{principle}{Convention}{Conventions}
+\crefname{frameworkdef}{Framework Definition}{Framework Definitions}
+\crefname{equation}{Equation}{Equations}
+\crefname{section}{Section}{Sections}
+
+% ---------- Running pages ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\sffamily\color{seriesMuted}\CanonShortTitle}
+\fancyhead[R]{\footnotesize\sffamily\color{seriesMuted}\CanonStage}
+\fancyfoot[L]{}
+\fancyfoot[R]{\footnotesize\sffamily\color{seriesMuted}\thepage}
+\renewcommand{\headrulewidth}{0.45pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{seriesRule}\leaders\hrule height \headrulewidth\hfill}}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[L]{}
+  \fancyfoot[R]{\footnotesize\sffamily\color{seriesMuted}\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\fancypagestyle{titlepage}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+
+% ---------- TOC ----------
+\setcounter{tocdepth}{2}
+\usepackage{tocloft}
+\setlength{\cftbeforesecskip}{0.42em}
+\setlength{\cftbeforesubsecskip}{0.08em}
+\renewcommand{\cftsecfont}{\sffamily\bfseries\color{seriesInk}}
+\renewcommand{\cftsecpagefont}{\sffamily\bfseries\color{seriesInk}}
+\renewcommand{\cftsubsecfont}{\sffamily\color{seriesMuted}}
+\renewcommand{\cftsubsecpagefont}{\sffamily\color{seriesMuted}}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cfttoctitlefont}{\Large\bfseries\sffamily\color{seriesInk}}
+\setlength{\cftaftertoctitleskip}{1em}
+
+% ---------- Shared series ornaments ----------
+\newcommand{\seriesrule}{%
+  \par\vspace{3pt}
+  {\color{seriesAccent}\rule{\textwidth}{0.85pt}}
+  \par\vspace{2pt}
+}
+\newcommand{\seriesmark}{%
+  \begin{tikzpicture}[baseline=-0.65ex]
+    \draw[seriesAccent,line width=0.7pt] (0,0) -- (0.42,0);
+    \fill[seriesInk] (0.54,0) circle (1.35pt);
+    \draw[seriesAccent,line width=0.7pt] (0.66,0) -- (1.08,0);
+  \end{tikzpicture}%
+}
+
+% ---------- Editorial callout boxes ----------
+\newtcolorbox{keyresult}{
+  enhanced,breakable,
+  colback=white,
+  colframe=seriesInk,
+  boxrule=0.75pt,
+  arc=1.2pt,
+  left=12pt,right=12pt,top=9pt,bottom=9pt,
+  before skip=12pt,after skip=12pt,
+  fontupper=\bfseries\sffamily\small\color{seriesInk}
+}
+\newtcolorbox{excludedclaims}{
+  enhanced,breakable,
+  colback=seriesAccent!4!white,
+  colframe=seriesAccent,
+  boxrule=0.75pt,
+  arc=1.2pt,
+  left=12pt,right=12pt,top=9pt,bottom=9pt,
+  before skip=12pt,after skip=12pt,
+  fontupper=\sffamily\small\color{seriesInk},
+  title={\textbf{Excluded Claims}},
+  coltitle=seriesAccent,
+  colbacktitle=seriesAccent!8!white
+}
+
+% ---------- Common title-page block ----------
+\newcommand{\CanonTitlePage}{%
+\begin{titlepage}
+\thispagestyle{titlepage}
+\vspace*{0.62cm}
+{\sffamily\footnotesize\bfseries\color{seriesMuted}
+THREE-PAPER ARCHITECTURE \hfill \CanonStage\par}
+\vspace{0.42cm}
+{\color{seriesAccent}\rule{\textwidth}{1.05pt}}\par
+\vspace{1.65cm}
+\ifx\CanonGenre\empty
+\else
+{\sffamily\footnotesize\bfseries\color{seriesMuted}\MakeUppercase{\CanonGenre}}\par
+\vspace{0.45cm}\fi
+{\sffamily\bfseries\fontsize{26}{30}\selectfont\color{seriesInk}\hyphenpenalty=10000\exhyphenpenalty=10000\CanonTitle\par}
+\vspace{0.52cm}
+{\sffamily\large\color{seriesAccent}\CanonSubtitle\par}
+\vspace{0.78cm}
+{\color{seriesAccent}\rule{0.24\textwidth}{0.9pt}}\par
+\vspace{0.95cm}
+{\normalsize\sffamily Canon\textsuperscript{*}\;\orcidlink{0009-0001-9037-6209}\par}
+\vspace{0.25cm}
+{\small\sffamily\color{seriesMuted}Independent Researcher\par}
+\vspace{0.16cm}
+{\small\sffamily\color{seriesMuted}\textsuperscript{*}\href{mailto:canon@necessaryuniverse.com}{canon@necessaryuniverse.com}\par}
+\vfill
+\ifx\CanonDeck\empty
+\else
+\begin{tcolorbox}[
+  enhanced,
+  colback=seriesPaper,
+  colframe=seriesRule,
+  boxrule=0.45pt,
+  leftrule=2.4pt,
+  arc=1.5pt,
+  left=11pt,right=11pt,top=9pt,bottom=9pt,
+  width=0.94\textwidth
+]
+\small\sffamily\color{seriesMuted}
+\CanonDeck
+\end{tcolorbox}
+\vspace{0.65cm}
+\fi
+\end{titlepage}
+}
+
+% ---------- Abstract treatment ----------
+\newenvironment{CanonAbstract}{%
+  \begin{center}
+  {\sffamily\footnotesize\bfseries\color{seriesMuted}\MakeUppercase{Abstract}}\\[-0.05em]
+  {\color{seriesAccent}\rule{0.16\textwidth}{0.75pt}}
+  \end{center}
+  \begin{tcolorbox}[
+    enhanced,
+    breakable,
+    colback=white,
+    colframe=seriesRule,
+    boxrule=0.4pt,
+    leftrule=2.2pt,
+    arc=1pt,
+    left=12pt,right=12pt,top=9pt,bottom=9pt,
+    before skip=5pt,after skip=4pt
+  ]
+  \small
+}{%
+  \end{tcolorbox}
+}
+
+% ---------- Bibliography polish ----------
+\newcommand{\CanonBibliographySetup}{%
+  \small
+  \setlength{\parskip}{0.22em}
+  \setlength{\itemsep}{0.55em}
+}
+
+\newcommand{\CanonStage}{DOCUMENT III · HOW}
+\newcommand{\CanonGenre}{Mathematical Physics}
+\newcommand{\CanonTitle}{Twisted Dynamics on the Klein Block}
+\newcommand{\CanonSubtitle}{A Conditional Framework for Kinematic Descent, Nodal Defect Structure, and Anomaly Constraints}
+\newcommand{\CanonShortTitle}{Twisted Dynamics}
+\newcommand{\CanonDeck}{A constructive foundation for the dynamical completion of the three-paper programme. Proven consequences are separated from conditional results, assumptions, proposed mechanisms, and explicit completion problems. The paper does not claim a completed cosmology; it makes the remaining tests mathematically and physically definite.}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\CanonTitlePage
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\begin{CanonAbstract}
+\textbf{Framework input.} The Klein Block $\Klein$, the non-orientable $\Sthree$-bundle over $\Sone$ with reflection monodromy selected in the companion topological paper~\cite{CanonWhat}. The present paper treats that identification as input and performs additional dynamical, fermionic, defect, and bordism analysis.
+
+\textbf{Established.} Subject to explicitly stated hypotheses, the paper proves: (i) compatibility of the twisted Einstein-matter return condition with constraint propagation, conditional on a symmetry of the full matter action; (ii) kinematic temporal periodicity of any FLRW metric that descends to the quotient; (iii) kinetic-sector equivariance of the Weyl operator once the required generalized fermion bundle and connection data exist; (iv) a conditional nodal theorem forcing the $S^2\times S^1$ fixed locus into the zero set of an orientation-odd condensate; and (v) one-sidedness of that locus. The paper also derives the integer charge assignment and ordinary gauged-$B-L$ anomaly cancellations and proves that the pure-gravitational $\Pin^+$ bordism class of the Klein Block is zero for both $\Pin^+$ structures.
+
+\textbf{Central negative result.} The Klein Block is \emph{not} a generator of the pure gravitational $\Omega_4^{\Pin^+}\cong\Z_{16}$ group. The proposed anomaly mechanism therefore cannot be attributed to spacetime topology alone. Any nontrivial realization must arise, if at all, from additional generalized gauge, fermionic, or deck-equivariant data. The corresponding mixed bordism problem is formulated but not evaluated here.
+
+\textbf{Not claimed.} The paper does not claim to have constructed the full Standard Model bundle on the quotient, found a non-linear cyclic Einstein-matter solution, constructed a physically acceptable quotient QFT state, computed the condensate, evaluated the mixed Smith invariant, derived a nonzero baryon asymmetry, or resolved the Tolman entropy problem.
+
+\textbf{Purpose of this paper.} Document III is therefore a \emph{constructive foundation} for the dynamical completion of the three-paper programme. Its scientific output is the set of results already proved together with a sharply defined sequence of necessary mathematical and physical tests. A failure of any necessary test would constrain or falsify the proposed model; a successful chain of resolutions would upgrade the three-paper construction toward a complete physical model.
+\end{CanonAbstract}
+
+\section*{Architectural Context: The Three-Paper Architecture}
+This paper constitutes the dynamical capstone of a three-part research architecture:
+
+\begin{enumerate}
+\item \textbf{Document I: The Ontological Engine}~\cite{CanonWhy}. Derives the five Closure-Admissible postulates from the axioms of Identity ($A=A$) and the prohibition of Brute Facts.
+\item \textbf{Document II: The Topological Engine}~\cite{CanonWhat}. Proves that the postulates uniquely force the Klein Block topology within the specified bundle category. The manifold identification and uniqueness result are imported here; the additional bordism and defect calculations below are new results of Document III.
+\item \textbf{Document III: The Dynamical Engine (This Paper)}. Constructs the conditional dynamical, fermionic, defect, and anomaly framework on the selected Klein Block and specifies the completion tests required before the resulting structure can be regarded as a complete physical model.
+\end{enumerate}
+
+\begin{keyresult}
+\textbf{Programme-level epistemic status.} The three papers are intended to construct a \emph{candidate model of reality}, not to declare that reality has already been proved to possess that structure. Document III is deliberately written so that the candidate can be strengthened, constrained, modified, or falsified by explicit future calculations. The paper is therefore neither a completed cosmology nor an unconstrained speculation: it is the dynamical and quantum consistency foundation of the proposed three-paper model.
+\end{keyresult}
+
+\addcontentsline{toc}{section}{Architectural Context: The Three-Paper Architecture}
+
+\newpage
+\section*{Results Ledger}
+Every major statement in this paper belongs to exactly one of the following categories.
+
+\begin{table}[H]
+\centering
+\caption{Logical status categories used throughout this paper.}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Status} & \textbf{Meaning} \\
+\midrule
+Theorem & Follows from stated assumptions with a complete argument in this paper \\
+Conditional theorem & Proved given stated hypotheses, including structures not yet constructed \\
+Derived & Algebraic/geometric consequence of established structure \\
+Conditional & True if a clearly stated missing hypothesis is established \\
+Assumed & Adopted as a model-building input, not derived here \\
+Proposed mechanism & A physically motivated route, not a demonstrated result \\
+Open & Requires a calculation or proof not supplied here \\
+Excluded & Explicitly not claimed by this paper \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Status of every major claim in this paper.}
+\small
+\begin{tabular}{@{}p{0.52\textwidth}p{0.38\textwidth}@{}}
+\toprule
+\textbf{Claim} & \textbf{Status} \\
+\midrule
+Twisted constraint compatibility & Conditional theorem (Thm.~\ref{thm:constraints}) \\
+Kinematic temporal periodicity under FLRW ansatz & Theorem (Thm.~\ref{thm:cyclic}) \\
+Free-fermion kinetic-sector equivariance & Conditional theorem (Thm.~\ref{thm:dirac_comm}) \\
+Conditional nodal locus for an orientation-odd condensate & Conditional theorem (Thm.~\ref{thm:wall_zero}) \\
+One-sided normal bundle of the nodal locus & Lemma (Lemma~\ref{lem:onesided}) \\
+Line-bundle equivalence criterion for Defects A and B & Lemma (Lemma~\ref{lem:wall_identification}) \\
+$C^2=1$ for the chosen bundle lift & Modeling condition on the lift (Lemma~\ref{lem:C2}) \\
+Internal deck-lift relation $U_F^2=(-1)^F$ & Derived from the stated lift relations (Remark~\ref{rem:F2}) \\
+Local $\Pin^-$ versus Euclidean $\Pin^+$ Clifford signs & Derived local convention; global identification separate \\
+$H_{\mathrm{total}}$ presentation & Formulated abstractly; not yet a principal bundle \\
+Integer charge table & Derived from chosen charge convention (Table~\ref{tab:charges}) \\
+Ordinary gauged-$B-L$ anomaly cancellation & Derived/checkable (Sec.~\ref{sec:anomaly}) \\
+Two-stage Abelian Higgsing by $\Phi_4$ and a charge-$2\bmod4$ field & Derived at the group-theoretic level \\
+Electroweak Higgs VEV performs the $\mathbb Z_4^X\to\mathbb Z_2^F$ reduction & Modeling assumption within the epoch history \\
+$\Phi_2$ Majorana operator & Gauge-invariant operator (Eq.~\ref{eq:majorana}) \\
+Fermion-spectrum $\mathbb Z_{16}$ relation & Imported anomaly result applied to the charge assignment \\
+Pure-gravitational Klein Block $\Pin^+$ class & Theorem: $0$ (Thm.~\ref{thm:pintrivial}) \\
+Defect A/B homology-class matching & Conditional (Lemma~\ref{lem:wall_identification}) \\
+Universal-cover dynamics & Assumed (Post.~\ref{post:cover}) \\
+Twisted return condition & Modeling convention (Def.~\ref{def:twisted}) \\
+Defect-localized chiral transport & Proposed mechanism \\
+4D-to-3D anomaly inflow & Proposed mechanism \\
+CP-odd source from the seam/defect & Proposed mechanism \\
+Twisted Poincar\'e fixed point & Open (OP-1) \\
+Quotient-compatible quantum state & Open (OP-2, OP-19) \\
+Full SM Lagrangian invariance & Open (OP-3) \\
+Mixed Smith evaluation & Open (OP-4, OP-18) \\
+Pure-gravitational generator claim & Resolved negatively: both pure classes are trivial \\
+$B-L$ quotient observable & Open (OP-6) \\
+Exact condensate profile & Open (OP-7) \\
+Microscopic condensate sector & Open (OP-8) \\
+Nonzero condensation/transversality/stability & Open (OP-9) \\
+Defect alignment & Open (OP-10) \\
+Stress tensor and backreaction & Open (OP-11) \\
+Localized fermion modes & Open (OP-12) \\
+CP-odd source term & Open (OP-13) \\
+Naive covering-space CP-odd integral vanishes & Derived (OP-14) \\
+$B-L$-violating dynamics & Open (OP-15) \\
+Boltzmann network & Open (OP-16) \\
+Quantitative baryon asymmetry & Open (OP-17) \\
+Exact generalized background bundle & Open (OP-18) \\
+Physical quotient QFT & Open (OP-19) \\
+Vacuum polarization & Open (OP-20) \\
+Cyclic temporal cancellation & Open (OP-21) \\
+Tolman entropy consistency & Open (OP-22) \\
+Mode coupling, Bogoliubov evolution, and implementability & Open (OP-23) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\addcontentsline{toc}{section}{Results Ledger}
+
+\newpage
+\section*{Logical Dependency Structure}
+The actual logical structure of this paper is a directed graph with established, conditional, and open edges. The most important distinction is between the pure geometric topology and the additional structure needed to define fermions, gauge fields, and quantum states globally.
+
+\begin{equation*}
+\boxed{\makebox[11cm][c]{$\text{Topology} \Rightarrow \text{kinematic descent conditions}$}}
+\quad [\text{Theorem/conditional}]
+\end{equation*}
+\begin{equation*}
+\boxed{\makebox[11cm][c]{$\begin{gathered}
+\text{Topology} + \text{local generalized fermion structure} + \text{deck lift} \\
+\Rightarrow \text{candidate fermion equivariance}
+\end{gathered}$}}
+\quad [\text{Conditional theorem}]
+\end{equation*}
+\begin{equation*}
+\boxed{\makebox[11cm][c]{$\begin{gathered}
+\text{equivariant orientation-odd section} + \text{smoothness/transversality} \\
+\Rightarrow \text{forced nodal locus}
+\end{gathered}$}}
+\quad [\text{Conditional theorem}]
+\end{equation*}
+\begin{equation*}
+\boxed{\makebox[13cm][c]{$\begin{gathered}
+\text{specified 5D generalized structure} + \text{Smith map} \\
++ \text{nontrivial resulting invariant} \Rightarrow \text{mixed anomaly realization}
+\end{gathered}$}}
+\quad [\text{Open}]
+\end{equation*}
+\begin{equation*}
+\boxed{\makebox[13cm][c]{$\begin{gathered}
+\text{quotient-compatible state} + \text{microscopic source} + B\text{-}L \text{ violation} \\
++ \text{transport} + \text{non-cancellation} \Rightarrow \eta_B
+\end{gathered}$}}
+\quad [\text{Open}]
+\end{equation*}
+
+\addcontentsline{toc}{section}{Logical Dependency Structure}
+
+\newpage
+\phantomsection
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\section{Introduction and Scope}
+\label{sec:intro}
+
+The topological classification of the universe as the Klein Block $\Klein$~\cite{CanonWhat} provides the geometric stage upon which the dynamical programme must be tested. A topological classification is a global constraint on admissible field configurations; it is not by itself a solution of the field equations or a definition of the physical quantum state. Document III therefore asks the next question: which classical fields, fermion structures, defects, and quantum consistency conditions can be imposed on this topology, and which of those conditions remain to be solved?
+
+\textbf{Precedents.} Several lines of recent work provide structural precedents for pieces of the construction. None is identical to the present model.
+
+Tzanavaris, Boyle, and Turok~\cite{Turok2026} study the Einstein--Hilbert variational problem when a spacelike singularity is treated as a free boundary. They derive reflecting-type boundary conditions and show that conformally regular FLRW solutions are admissible under appropriate matter conditions. Their setting is a singular spacelike boundary, not a smooth temporal quotient; the present citation is therefore a precedent for boundary-based cosmological consistency, not a validation of the Klein Block.
+
+Boyle, Finn, and Turok~\cite{BoyleFinnTurok} proposed a CPT-symmetric cosmology in which a temporal reflection relates the two sides of a bounce. That construction differs essentially from the present mapping-torus geometry, whose deck transformation translates forward in the time coordinate. It is cited as a comparison for entropy, CPT, and cosmological state questions.
+
+Greene, Kabat, Levin, and Porrati~\cite{Greene2026,GreeneCompact} study non-orientable Klein-bottle compactifications and find condensate-wall and particle-production effects in higher-dimensional models. Their compactification is not the four-dimensional $\Sthree$-bundle-over-$\Sone$ spacetime studied here. It provides a precedent that non-orientability can produce nontrivial fermionic and CP-sensitive structures, not a derivation of the present construction.
+
+\textbf{Goal of this paper.} This paper constructs a conditional dynamical foundation for the three-paper model. It does not solve every dynamical problem. Instead, it proves the consequences that follow from the specified geometry and hypotheses, identifies precisely where additional mathematical structures are required, and converts the remaining physics into explicit completion tests. This distinction is central to the scientific status of the three-paper programme: the model is constructed as a candidate whose consistency can be tested, not as a conclusion that every proposed consequence has already been demonstrated.
+
+The five principal outputs are:
+
+\begin{enumerate}
+\item \textbf{Kinematic descent and temporal periodicity} (Section~\ref{sec:grav}). Status: theorem/conditional theorem; existence and stability of a twisted periodic solution remain open.
+\item \textbf{Free-fermion kinematic descent} (Section~\ref{sec:fermion}). Status: conditional theorem in the kinetic sector; the complete global generalized bundle and deck lift remain open.
+\item \textbf{Conditional nodal defect structure} (Section~\ref{sec:wall}). Status: conditional theorem for the nodal locus; dynamical realization and alignment remain open.
+\item \textbf{Formal mode equation and baryogenesis obstruction analysis} (Section~\ref{sec:wall}). Status: formulated; evaluation is open.
+\item \textbf{Pure Pin$^+$ obstruction and mixed Smith programme} (Section~\ref{sec:anomaly}). Status: pure class computed to be trivial; the genuinely mixed generalized problem remains open.
+\end{enumerate}
+
+\section{Kinematic Descent Conditions and Temporal Periodicity}
+\label{sec:grav}
+
+\subsection{Chronology Status of the Quotient}
+
+For the FLRW metric used below, $\partial_t$ is timelike and
+\begin{equation}
+F^2(x,t)=(x,t+2L_t).
+\end{equation}
+Hence the projected curve through any fixed spatial point is closed after two deck steps and is timelike. On the fixed locus of $r$, one deck step closes the projected timelike curve. Thus the descended FLRW quotient contains a closed timelike curve through every point. For a general Lorentzian metric on the cover, chronology violation is an additional property of the metric and does not follow from the topology alone.
+
+All dynamical calculations in this paper are performed on the globally hyperbolic universal cover $\widetilde{\Klein}=\Sthree\times\R$ and are then required to satisfy quotient equivariance. This is a deliberate separation: calculations on the cover are a calculational device, while a physical quotient theory requires a separately constructed state and observable algebra.
+
+\begin{keyresult}
+Cover dynamics $\neq$ an already-defined physical QFT on the quotient. In particular, the existence of a globally hyperbolic covering-space evolution does not by itself establish existence of a regular quantum state, renormalized stress tensor, or unitary quotient dynamics on the chronology-violating spacetime.
+\end{keyresult}
+
+The Kay--Radzikowski--Wald theorem is relevant only when its hypotheses concerning compactly generated Cauchy horizons and the specified quantum extension are satisfied; the present paper does not assume that those hypotheses have been established for every metric in the Klein Block class~\cite{KayRadzikowskiWald}. The issue is therefore retained as a concrete QFT consistency problem rather than converted into an unconditional no-go theorem.
+
+\subsection{The Universal Cover and the Twisted Return Map}
+
+\begin{postulate}[Universal-Cover Dynamics] \label{post:cover}
+Let $\widetilde{\Klein}=\Sthree\times\R$ carry a globally hyperbolic Lorentzian metric $g$ and matter fields $\Phi$ constituting a sufficiently regular solution to the Einstein--matter field equations,
+\begin{equation}
+G_{\mu\nu}+\Lambda g_{\mu\nu}=8\pi G\,T_{\mu\nu}.
+\end{equation}
+The required regularity is whatever is needed for the chosen hyperbolic formulation and for the quantities subsequently used in the return map.
+\end{postulate}
+
+The physical spacetime is the quotient $\Klein=\widetilde{\Klein}/\langle F\rangle$, where
+\begin{equation}
+F(x,t)=(r(x),t+L_t),
+\qquad
+r(x_1,x_2,x_3,x_4)=(-x_1,x_2,x_3,x_4),
+\qquad L_t>0.
+\end{equation}
+
+\begin{definition}[Twisted Return Condition] \label{def:twisted}
+Let $\Sigma_t\cong\Sthree$ be a Cauchy slice on the universal cover. The geometric part of the identification maps $\Sigma_t$ to $\Sigma_{t+L_t}$ by $r$. Let $U_F$ denote the fiber/bundle automorphism covering the internal part of the deck lift. A field configuration descends when
+\begin{equation}
+F^*g=g,
+\qquad
+F^*\Phi\simeq\Phi,
+\end{equation}
+where $\simeq$ denotes the appropriate bundle, gauge, or generalized-fermion action. On reduced phase space, after identifying the two slices by $r$, the return condition is
+\begin{equation}
+[\mathcal E_{L_t}(\Gamma)]_{\mathcal G}
+=
+[U_F\,r^*\Gamma]_{\mathcal G},
+\label{eq:canonical_period}
+\end{equation}
+where $\Gamma$ denotes canonical initial data on $\Sigma_t$ and $\mathcal E_{L_t}$ is the evolution map through $[t,t+L_t]$ on the subset of data for which a sufficiently regular solution exists on the whole interval.
+\end{definition}
+
+The distinction between $F$ and $U_F$ is essential. The geometric deck transformation satisfies $F^2\neq\id$ on the universal cover, whereas the square of the \emph{internal} deck lift may be a central fermion-parity element. This distinction is used explicitly in Section~\ref{sec:fermion}.
+
+\begin{theorem}[Constraint Compatibility Under Twisted Evolution] \label{thm:constraints}
+Assume: (i) the Einstein--matter evolution is well posed on the interval under consideration; (ii) the constraints propagate for that evolution; and (iii) the internal deck lift together with the spatial monodromy $r$ is a symmetry of the full matter action, including all gauge and matter constraints. Then any initial data $\Gamma$ on the Einstein--matter constraint surface $\mathcal C$ satisfy $\mathcal E_{L_t}(\Gamma)\in\mathcal C$, and $U_F r^*\Gamma\in\mathcal C$. Consequently the twisted return condition~\eqref{eq:canonical_period} is compatible with the constraint surface.
+\end{theorem}
+\begin{proof}
+By assumption (ii), the Einstein--matter evolution maps constraint-satisfying data to constraint-satisfying data, so $\mathcal E_{L_t}(\Gamma)\in\mathcal C$. By assumption (iii), the map induced by the spatial diffeomorphism $r$ and the accompanying gauge/bundle automorphism preserves the Hamiltonian and momentum constraints and the internal gauge constraints. Hence $U_F r^*\Gamma\in\mathcal C$ whenever $\Gamma\in\mathcal C$. Both representatives in~\eqref{eq:canonical_period} therefore lie in the same reduced constraint space.
+\end{proof}
+
+\begin{remark}[Scope of Theorem~\ref{thm:constraints}]
+The theorem establishes compatibility of the proposed twisted return condition with constraint propagation. It does not establish existence of a solution of the fixed-point equation~\eqref{eq:canonical_period}. Existence is OP-1.
+\end{remark}
+
+\subsection{Kinematic Temporal Periodicity}
+
+\begin{theorem}[Kinematic Temporal Periodicity] \label{thm:cyclic}
+Any FLRW metric
+\begin{equation}
+ds^2=-dt^2+a^2(t)\,d\Omega_3^2
+\end{equation}
+on $\widetilde{\Klein}$ that descends to $\Klein$ satisfies
+\begin{equation}
+a(t+L_t)=a(t).
+\end{equation}
+\end{theorem}
+\begin{proof}
+The quotient condition $F^*g=g$ requires
+\begin{equation}
+a^2(t+L_t)\,r^*d\Omega_3^2=a^2(t)\,d\Omega_3^2.
+\end{equation}
+Since $r$ is an isometry of the unit three-sphere, $r^*d\Omega_3^2=d\Omega_3^2$. Therefore $a^2(t+L_t)=a^2(t)$. A nondegenerate FLRW metric has $a(t)>0$, hence $a(t+L_t)=a(t)$.
+\end{proof}
+
+\begin{remark}[Scope of Theorem~\ref{thm:cyclic}]
+This is a periodic boundary condition on the scale factor. It is not a periodic dynamical solution, a stable cyclic attractor, or a proof of a nonsingular solution with $0<a_{\min}<a_{\max}<\infty$. Existence depends on the Einstein--matter equations, matter content, equation of state, and global regularity and remains open. The phrase ``kinematic temporal periodicity'' denotes the quotient condition only.
+\end{remark}
+
+\subsection{Open Problem OP-1: Twisted Poincar\'e Fixed Point and Stability}
+
+The nonlinear equation
+\begin{equation}
+\mathcal E_{L_t}(\Gamma)=U_F r^*\Gamma
+\end{equation}
+is a twisted Poincar\'e return-map problem. A solution would provide a nonsingular Einstein--matter configuration on the universal cover that descends to the Klein Block. Floquet multipliers are then defined by linearizing the return map about that periodic solution. Thus OP-1 contains two logically distinct questions: existence of a twisted fixed point and stability of the resulting cycle.
+
+\subsection{Open Problem OP-22: The Tolman Entropy Problem}
+
+A periodic geometry combined with irreversible particle production raises a thermodynamic consistency problem: entropy production in one cycle must be reconciled with return to the same quotient geometry and, for any proposed stationary or Floquet state, with the appropriate return condition on the physical state. Unlike the CPT-symmetric universe programme~\cite{BoyleFinnTurok}, the deck transformation here advances $t$ and contains no temporal reversal. No entropy theorem is claimed; OP-22 asks whether a consistent thermodynamic state can exist at all once the microscopic dynamics and state have been specified.
+
+\section{Free-Fermion Kinematic Descent and Generalized Structure}
+\label{sec:fermion}
+
+\subsection{Abelian Normalization and Gauge-Basis Conventions}
+
+The UV Abelian gauge factors are $U(1)_Y\times U(1)_{B-L}$. In the all-right-moving fermion convention, $(B-L)_{\mathrm{int}}=3(B-L)$ is the integer matter charge normalization in which quarks carry $+1$ and leptons carry $-3$. Define
+\begin{equation}
+Q_B\equiv5(B-L)_{\mathrm{int}},
+\qquad
+X\equiv-2Y_{\mathrm{int}}+Q_B.
+\end{equation}
+The change of Abelian basis
+\begin{equation}
+(Y_{\mathrm{int}},Q_B)\mapsto(X,Y_{\mathrm{int}})
+\end{equation}
+has integer determinant $-1$. Thus it is a $GL(2,\mathbb Z)$ change of the Abelian charge lattice. At the Abelian lattice/Lie-algebra level this may be represented as $U(1)_X\times U(1)_Y$; the full global gauge group remains subject to the Standard-Model center quotient and its compatibility with the deck automorphism. That global quotient is not suppressed into the Abelian basis change.
+
+In this basis a charge-$4$ scalar VEV leaves a $\mathbb Z_4^X$ subgroup. A subsequent VEV of any field with $X$-charge congruent to $2\pmod4$ reduces this subgroup to its order-two subgroup. Thus the group-theoretic chain is
+\begin{equation}
+U(1)_X\times U(1)_Y
+\xrightarrow{\langle\Phi_4\rangle}
+\mathbb Z_4^X\times U(1)_Y
+\xrightarrow{\langle\Phi_2\rangle\ \mathrm{or}\ \langle H\rangle}
+\mathbb Z_2^X\times U(1)_Y.
+\end{equation}
+On the fermion spectrum the order-two element is identified with $(-1)^F$ because every fermion has odd $X$-charge. Electroweak symmetry breaking is a separate operation on $SU(2)_L\times U(1)_Y$.
+
+The complex scalar $\Phi_2$ is distinct from the real sign-line section $\phi_X$ introduced later. The latter is an induced low-energy order parameter and not an independently normalized UV gauge field.
+
+The gauge-invariant right-handed Majorana operator is
+\begin{equation}
+\mathcal L_M=-\frac12y_N\Phi_2\,\nu_R\nu_R+\mathrm{h.c.}
+\label{eq:majorana}
+\end{equation}
+with
+\begin{equation}
+6-3-3=0,
+\qquad
+30-15-15=0
+\end{equation}
+for $(B-L)_{\mathrm{int}}$ and $X$, respectively. The charge assignment therefore permits a gauge-invariant Majorana mass. Its rate, phase, and transport role remain open.
+
+At one loop the matter spectrum has
+\begin{equation}
+\operatorname{Tr}(Y_{\mathrm{int}}Q_B)=-240
+\end{equation}
+per generation, equivalently
+\begin{equation}
+\operatorname{Tr}\!\left(Y_{\mathrm{int}}(B-L)_{\mathrm{int}}\right)=-48.
+\end{equation}
+Hence vanishing Abelian kinetic mixing can be imposed as a matching/renormalization condition at a chosen scale, but is not protected by the displayed matter spectrum alone. This is separate from gauge-anomaly cancellation.
+
+\begin{table}[H]
+\centering
+\caption{Integer $X$-charge assignment for the fermion multiplets in the all-right-moving convention.}
+\label{tab:charges}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Field} & $Y_{\mathrm{int}}$ & $(B-L)_{\mathrm{int}}$ & $X=-2Y+5(B-L)$ \\
+\midrule
+$\ell_L^c$ & $-3$ & $3$ & $21 \equiv 1$ \\
+$q_L^c$ & $1$ & $-1$ & $-7 \equiv 1$ \\
+$e_R$ & $6$ & $-3$ & $-27 \equiv 1$ \\
+$u_R$ & $-4$ & $1$ & $13 \equiv 1$ \\
+$d_R$ & $2$ & $1$ & $1 \equiv 1$ \\
+$\nu_R$ & $0$ & $-3$ & $-15 \equiv 1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Scalar charge assignments for the proposed symmetry-breaking pattern. The primitive integral Abelian charge is $Q_B=5(B-L)_{\mathrm{int}}$.}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Scalar} & $Y_{\mathrm{int}}$ & $(B-L)_{\mathrm{int}}$ & $X$ \\
+\midrule
+$\Phi_4$ & $0$ & $4/5$ & $4$ \\
+$\Phi_2$ & $0$ & $6$ & $30 \equiv 2 \pmod 4$ \\
+$H$ & $3$ & $0$ & $-6 \equiv 2 \pmod 4$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Notation Table for Distinct Operations}
+
+The following objects are distinct and must not be identified.
+
+\begin{table}[H]
+\centering
+\caption{Distinct operations and fields.}
+\begin{tabular}{@{}cll@{}}
+\toprule
+\textbf{Symbol} & \textbf{Type} & \textbf{Role} \\
+\midrule
+$r$ & spatial reflection & geometric monodromy \\
+$C$ & gauge/bundle automorphism & charge conjugation \\
+$\widetilde r$ & Pin lift & fermionic geometric action on fibers \\
+$x$ & internal $\mathbb Z_4^X$ generator & discrete gauge transformation \\
+$\widehat F$ & full deck lift & bundle automorphism covering $F$ \\
+$U_F$ & fiber/internal part of $\widehat F$ & internal gluing data \\
+$\Sigma_5$ & orientation-line section & geometric CP-odd order parameter \\
+$\phi_X$ & $L_X$-section & induced real sign-line order parameter \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Local Generalized Fermion Structure and the Global Deck Lift}
+
+\begin{definition}[Local Generalized Fermion Structure] \label{def:spinZ4}
+The local fermion bundle is described by a generalized spin structure in which the fermionic central element is identified with the order-two element of an internal $\mathbb Z_4$ extension. Abstractly, introduce generators $\widetilde r$, $C$, $x$, and $(-1)^F$ satisfying
+\begin{equation}
+\begin{split}
+\widetilde r^2&=(-1)^F,\qquad C^2=1,\qquad x^4=1,\qquad x^2=(-1)^F,\\
+[\widetilde r,x]&=0,\qquad[\widetilde r,C]=0,\qquad CxC^{-1}=x^{-1},\\
+[(-1)^F,\widetilde r]&=[(-1)^F,C]=[(-1)^F,x]=1,
+\qquad ((-1)^F)^2=1.
+\end{split}
+\label{eq:htotal}
+\end{equation}
+The subgroup generated by the local spin lift and $x$ is of $\mathrm{Spin}^{\mathbb Z_4}$ type, namely $\mathrm{Spin}\times_{\mathbb Z_2^F}\mathbb Z_4$ in the standard notation. The charge-conjugation action is additional structure. The geometric deck action is also additional structure and is not promoted here to a local gauge generator.
+
+A full deck lift is a bundle automorphism
+\begin{equation}
+\widehat F=(F,U_F),
+\end{equation}
+covering the geometric map $F$. The relations in~\eqref{eq:htotal} specify a candidate internal action
+\begin{equation}
+U_F=\widetilde r\,C\,x,
+\end{equation}
+but do not by themselves construct the corresponding principal bundle, Pinor bundle, or representation. Those constructions remain open in OP-18.
+\end{definition}
+
+\begin{lemma}[Charge-Conjugation Automorphism and Chosen Lift] \label{lem:C2}
+Complex conjugation defines an involutive automorphism of the relevant Standard-Model gauge-group representation data at the group-automorphism level: it sends each representation to its conjugate and preserves the $\mathbb Z_6$ center quotient. For the fermionic deck construction one must additionally choose a bundle automorphism $C$ covering this group automorphism and impose $C^2=1$ on that lift. The latter is a condition on the chosen bundle data, not a consequence of the abstract gauge-group involution alone.
+\end{lemma}
+
+\subsection{Five-Stage Construction}
+
+The complete fermion construction proceeds in five stages. Stage 1 is formulated here; Stages 2--5 remain open.
+
+\begin{enumerate}
+\item \textbf{Abstract local structure:} the generalized relations in Definition~\ref{def:spinZ4}. [\textbf{Formulated.}]
+\item \textbf{Field representations:} representations of the local generalized structure and gauge group on the complete SM field content. [\textbf{Open.}]
+\item \textbf{Principal local bundle:} a principal bundle for the local structure group on $\Klein$. [\textbf{Open.}]
+\item \textbf{Associated Pinor bundle:} the associated spinor/Pinor bundle with its gauge representations. [\textbf{Open.}]
+\item \textbf{Global deck lift:} a lift $\widehat F$ covering $F$, compatible with the chosen generalized fermion structure and any Smith-induced $\Pin^+$ data. [\textbf{Open.}]
+\end{enumerate}
+
+\begin{remark}[Local structure versus global gluing]
+The distinction between the local principal bundle and the global deck lift is essential. The deck generator is not a local gauge field. Treating it as such would obscure the difference between a local generalized spin structure and the global monodromy that identifies the quotient.
+\end{remark}
+
+\subsection{Global \texorpdfstring{$B$-$L$}{B-L} Observable and Quotient Compatibility}
+
+Because the deck gluing includes charge conjugation, the covering-space matter current obeys the formal transformation rule
+\begin{equation}
+U_F^*J_{B-L}=-J_{B-L}
+\end{equation}
+when the current is evaluated in the corresponding conjugate representation. Once the bundle is constructed, this is naturally represented by a local-system-valued current
+\begin{equation}
+J_{B-L}\in\Omega^1(\Klein;\mathcal L_{B-L})
+\end{equation}
+for the real sign local system associated with the charge-conjugation action.
+
+Because $B-L$ is gauged in the UV, however, the quantity
+\begin{equation}
+Q_{B-L}=\int_{\Sigma}*J_{B-L}
+\end{equation}
+is not automatically a physical global charge. A valid observable must also satisfy the gauge Gauss constraint on the compact spatial slice, must be compatible with the symmetry-breaking sector, and must descend through the deck identification. OP-6 therefore asks for a gauge-invariant, quotient-compatible low-energy asymmetry observable; it need not be the integral of the naive current above.
+
+\subsection{Three-Layer Pin Continuation}
+
+\textbf{Layer A: Local Lorentzian Clifford calculation.}
+For coordinates ordered as $(t,x^1,x^2,x^3)$, the spatial reflection is
+\begin{equation}
+r_p(t,x^1,x^2,x^3)=(t,-x^1,x^2,x^3),
+\end{equation}
+with Jacobian $\operatorname{diag}(1,-1,1,1)$. In Lorentzian signature $(+---)$, a Clifford lift by $\gamma^1$ has
+\begin{equation}
+(\gamma^1)^2=-1.
+\end{equation}
+In the generalized fermion structure adopted here, this central sign is identified with $(-1)^F$. This is a convention for the fermionic lift, not a theorem that all reflection lifts in all signatures have the same square.
+
+\textbf{Layer B: Euclidean continuation.}
+Under the local Wick-rotation convention $\gamma_E^1=i\gamma_L^1$, one obtains
+\begin{equation}
+(\gamma_E^1)^2=-(\gamma_L^1)^2=+1,
+\end{equation}
+which is the local Euclidean Clifford sign associated with a $\Pin^+$ reflection convention. This local calculation does not by itself construct a global Euclidean Pin$^+$ structure on the quotient. The global structure is determined separately by the tangent bundle and the chosen global lift.
+
+\textbf{Layer C: Global bundle identification.}
+For the present Klein Block, the pure-gravitational Pin$^+$ class can be decided independently of this local continuation: the manifold bounds the unit disk bundle $D(E)$ of the rank-four bundle $E=\mu\oplus\varepsilon^3$, and both Pin$^+$ structures extend. Thus the pure Pin$^+$ bordism class is zero. The remaining open problem is whether the additional generalized gauge/deck structure defines a nontrivial mixed bordism class.
+
+\subsection{Pinor Descent and the Internal \texorpdfstring{$U_F^2$}{UF squared} Calculation}
+
+Because $\Klein$ is non-orientable, global chirality is not defined. A Weyl decomposition remains available on the oriented universal cover, where a chosen local left-handed Weyl spinor $\chi_\alpha^A$ may satisfy the candidate semilinear deck condition
+\begin{equation}
+\chi_\alpha^A(x,t+L_t)
+=
+S(r)_\alpha{}^{\dot\beta}
+\,\rho(\kappa_G)^A{}_{\bar B}
+\,e^{-i\pi q_X/2}
+\,\overline{\chi}_{\dot\beta}^{\bar B}(r(x),t).
+\label{eq:weyl_descent}
+\end{equation}
+Here $S(r)$ is a chosen geometric Pin lift, $\kappa_G$ is the gauge-group automorphism sending a representation to its conjugate, and the $\mathbb Z_4^X$ phase is the action of $x$ in the chosen representation. Equation~\eqref{eq:weyl_descent} is a candidate global gluing law, not yet a constructed quotient bundle.
+
+\begin{remark}[Internal deck square and the geometric deck square] \label{rem:F2}
+With
+\begin{equation}
+U_F=\widetilde r Cx,
+\end{equation}
+and the relations in Definition~\ref{def:spinZ4}, the internal fiber action satisfies
+\begin{align}
+U_F^2
+&=\widetilde r Cx\,\widetilde r Cx\\
+&=\widetilde r^2 CxCx
+\quad\text{since }[\widetilde r,C]=[\widetilde r,x]=0\\
+&=\widetilde r^2 C(CxC^{-1})x\\
+&=\widetilde r^2 C^2 x^{-1}x\\
+&=(-1)^F.
+\end{align}
+This is a statement about the internal/fiber lift. It must not be confused with the geometric fact
+\begin{equation}
+F^2(x,t)=(x,t+2L_t)\neq(x,t)
+\end{equation}
+on the universal cover. Thus the central fermion-parity sign describes the square of the internal monodromy, not the square of the spacetime deck translation itself.
+\end{remark}
+
+\begin{theorem}[Free-Fermion Kinetic-Sector Equivariance] \label{thm:dirac_comm}
+Assume that: (i) the generalized fermion bundle and its deck lift covering $F$ exist; (ii) the chosen Pin/geometric lift intertwines the spin connection and vierbein under $r$; (iii) the gauge connection is compatible with the gauge automorphism $\kappa_G$; and (iv) the full internal lift $U_F$ acts on the representation as specified. Then the kinetic Weyl operator intertwines with the deck lift. In particular, if $\chi$ satisfies~\eqref{eq:weyl_descent}, then $i\bar\sigma^\mu D_\mu\chi$ satisfies the corresponding transformed equivariance condition.
+\end{theorem}
+\begin{proof}
+Let $D$ denote the covariant Weyl operator built from the vierbein, spin connection, and gauge connection. By assumptions (ii) and (iii), pulling the operator back by the spatial monodromy and applying the bundle automorphisms gives
+\begin{equation}
+D\circ U_F r^* = U_F r^*\circ D
+\end{equation}
+on sections related by the semilinear charge-conjugation map, with the usual representation conjugation understood. Hence the image of an equivariant section is again equivariant. The proof uses only covariance of the kinetic operator; it does not establish existence of the bundle, of the interacting theory, or of a quotient-compatible quantum state.
+\end{proof}
+
+\subsection{What Remains for Interacting Standard Model Descent}
+
+Theorem~\ref{thm:dirac_comm} concerns the kinetic sector only. OP-3 requires the full Standard Model Lagrangian to be invariant under the generalized deck action. In flavor space, generalized-CP constraints take schematic form
+\begin{equation}
+Y_f = X_L^\dagger Y_f^*X_R,
+\end{equation}
+with unitary flavor-space matrices $X_L,X_R$ determined by the chosen generalized transformation, and analogous constraints for all Yukawa sectors. The following remain open:
+\begin{itemize}
+\item generalized-CP constraints on Yukawa couplings and mass matrices;
+\item Higgs potential descent;
+\item gauge kinetic terms and topological $\theta$-terms;
+\item flavor structure, CKM and PMNS phases;
+\item compatibility with the global Standard-Model center quotient;
+\item full invariance $\widehat F^*\mathcal L_{\mathrm{SM}}=\mathcal L_{\mathrm{SM}}$.
+\end{itemize}
+
+\section{Conditional Nodal Defect Structure and Formal Mode Equations}
+\label{sec:wall}
+
+\subsection{Two Distinct Defects}
+
+\begin{enumerate}
+\item \textbf{Defect A (geometric CP nodal locus).} The fixed spatial locus of $r$ becomes a forced zero set conditional on an orientation-odd condensate. The CP-odd condensate is represented by a section
+\begin{equation}
+\Sigma_5(x)
+\equiv
+\langle\bar\Psi i\gamma_5\Psi\rangle_{\mathrm{ren}}
+\in\Gamma(\Lor),
+\end{equation}
+where $\Psi$ is a Pinor field and the pseudoscalar bilinear is interpreted as an orientation-line-valued object.
+
+\item \textbf{Defect B (Smith/anomaly defect candidate).} Let $P_X$ denote the residual $\mathbb Z_4^X$ gauge bundle and let $L_X$ be the real sign line associated with the homomorphism
+\begin{equation}
+\rho_{\mathrm{sign}}:\mathbb Z_4\longrightarrow O(1),
+\qquad
+\rho_{\mathrm{sign}}(x)=-1.
+\end{equation}
+Equivalently, this representation factors through $\mathbb Z_4/\langle x^2\rangle\cong\mathbb Z_2$. The induced real order parameter is a section
+\begin{equation}
+\phi_X\in\Gamma(L_X),
+\end{equation}
+and a transverse zero set $W_B=Z(\phi_X)$ is the candidate three-dimensional gauged defect. A microscopic construction of $\phi_X$ is not yet supplied.
+\end{enumerate}
+
+Defect A and Defect B are not identified in this paper. The geometric CP defect may provide a topological seed for the $\mathbb Z_4^X$-breaking sector, but dynamical alignment is OP-10.
+
+\subsection{Conditional Nodal Theorem for an Orientation-Odd Condensate}
+
+\begin{theorem}[Conditional Nodal Theorem] \label{thm:wall_zero}
+Assume: (i) a renormalized state exists for which $\Sigma_5$ is a smooth section of $\Lor$; (ii) the state is invariant under the lifted deck transformation up to an overall phase; (iii) $\Sigma_5$ is static and comoving in the FLRW slicing; and (iv) $\Sigma_5$ is transverse to the zero section. Then
+\begin{equation}
+r^*\Sigma_5=-\Sigma_5,
+\end{equation}
+and the fixed locus of $r$ satisfies
+\begin{equation}
+S^2\times S^1\subseteq Z(\Sigma_5).
+\end{equation}
+Under transversality, the full zero set represents the mod-2 Poincar\'e dual class
+\begin{equation}
+[Z(\Sigma_5)]_2=\operatorname{PD}\!\left(w_1(\Lor)\right).
+\end{equation}
+\end{theorem}
+\begin{proof}
+The pseudoscalar bilinear changes sign under the orientation-reversing part of the deck action, while the assumed state invariance identifies the expectation value before and after the transformation. Therefore the resulting section obeys $r^*\Sigma_5=-\Sigma_5$. At a fixed point $x=r(x)$, the two values lie in the same fiber and hence satisfy $\Sigma_5(x)=-\Sigma_5(x)$, so $\Sigma_5(x)=0$. The fixed locus of the reflection on $S^3$ is the equatorial $S^2$, and its mapping-torus locus is $S^2\times S^1$. Finally, a transverse section of a real line bundle has a mod-2 zero locus Poincar\'e dual to the first Stiefel--Whitney class of that line bundle.
+\end{proof}
+
+\begin{remark}[Five Distinct Problems]
+The following are logically distinct:
+\begin{enumerate}
+\item existence of $\Sigma_5$ as a smooth renormalized section [assumed in the theorem];
+\item equivariance $r^*\Sigma_5=-\Sigma_5$ [proved under the theorem hypotheses];
+\item nonzero magnitude away from the nodal locus [open: OP-9];
+\item dynamical stability of the nodal configuration [open: OP-9];
+\item transversality [assumed in the theorem and requiring verification in a completed model].
+\end{enumerate}
+\end{remark}
+
+\subsection{Three-Level Hierarchy for Defects A and B}
+
+\begin{lemma}[Line-Bundle Equivalence and Homology-Class Matching] \label{lem:wall_identification}
+Let $\Lor$ and $L_X$ be real line bundles on $\Klein$. Then
+\begin{equation}
+\Lor\cong L_X
+\quad\Longleftrightarrow\quad
+w_1(\Lor)=w_1(L_X)\in H^1(\Klein;\Ztwo).
+\end{equation}
+When these equivalent conditions hold, generic transverse zero sets represent the same mod-2 homology class:
+\begin{equation}
+[W_A]_2=[W_B]_2=\operatorname{PD}\!\left(w_1(\Lor)\right).
+\end{equation}
+\end{lemma}
+
+The three levels remain distinct:
+\begin{enumerate}
+\item \textbf{Proved conditionally:} $Z(\Sigma_5)\supset S^2\times S^1$ under the hypotheses of Theorem~\ref{thm:wall_zero}.
+\item \textbf{Conditionally implied:} equality of $w_1$ classes implies line-bundle equivalence and equal generic mod-2 defect class.
+\item \textbf{Open:} whether the actual embedded defects are dynamically aligned, isotopic, or identical as physical sectors.
+\end{enumerate}
+
+\begin{lemma}[One-Sided Normal Bundle] \label{lem:onesided}
+Let $\gamma_t\subset W_A$ be the temporal $\Sone$ generator. Then
+\begin{equation}
+\left\langle w_1(\nu W_A),[\gamma_t]\right\rangle=1\pmod2.
+\end{equation}
+Consequently $w_1(\nu W_A)\neq0$ and the defect is one-sided. Transport must therefore be formulated with local tubular neighborhoods and the orientation/sign line, not by a globally defined inside/outside decomposition.
+\end{lemma}
+\begin{proof}
+The normal coordinate is the reflected coordinate $x^1$. Transport around the temporal generator applies one spatial monodromy and hence sends the normal coordinate to $-x^1$. The normal line has holonomy $-1$ and therefore evaluates nontrivially on the temporal cycle.
+\end{proof}
+
+\subsection{Cosmological Epochs and Symmetry Breaking}
+
+The consistent group-theoretic sequence is
+\begin{equation}
+U(1)_X
+\xrightarrow{\langle\Phi_4\rangle}
+\mathbb Z_4^X
+\xrightarrow{\langle H\rangle\ \mathrm{or}\ \langle\Phi_2\rangle}
+\mathbb Z_2^F.
+\end{equation}
+In the intended cosmological chronology, the Higgs VEV may perform the discrete reduction during electroweak symmetry breaking, while $\Phi_2$ subsequently generates the right-handed Majorana mass without causing a second independent $\mathbb Z_4\to\mathbb Z_2$ reduction. Thus $\Phi_2$ may change the low-temperature dynamics and rates without being assigned a nonexistent second discrete-breaking stage.
+
+\begin{itemize}
+\item \textbf{High $T$:} the $U(1)_X$ symmetry is unbroken, subject to the existence of the UV matter content and the chosen deck-equivariant formulation.
+\item \textbf{Electroweak Scale:} the SM Higgs VEV breaks the SM gauge group. Because $q_X(H)=2\bmod4$, it can reduce $\mathbb Z_4^X$ to its order-two subgroup, identified with fermion parity on the fermion spectrum.
+\item \textbf{Low $T$ ($T<M_{\nu_R}$):} $\Phi_2$ may acquire a nonzero magnitude and generate the operator~\eqref{eq:majorana}. Its rate, phase, and transport effects remain open. A separate real sign-line order parameter $\phi_X$ may then describe a defect sector if the microscopic theory actually generates it.
+\end{itemize}
+
+\subsection{Effective Pseudoscalar Mass}
+
+The effective pseudoscalar mass is defined as an orientation-line-valued constitutive relation
+\begin{equation}
+m_5(\eta,x)=g_5\Sigma_5(x)\in\Gamma(\Lor),
+\end{equation}
+where $[\Sigma_5]=3$, $[g_5]=-2$, and $[m_5]=1$ in four dimensions. The product $m_5\bar\Psi i\gamma_5\Psi$ is orientation-even at the level of the proposed transformation laws and is therefore a candidate globally defined interaction. The microscopic origin of this coupling is OP-8.
+
+\subsection{Formal Mode Equation}
+
+After the conformal rescaling of a Dirac field on
+\begin{equation}
+ds^2=a^2(\eta)\left(-d\eta^2+d\Omega_3^2\right),
+\end{equation}
+the free Dirac operator on the unit $S^3$ has eigenvalues
+\begin{equation}
+\lambda_n^{\mathrm{conf}}=\pm\left(n+\frac32\right),
+\qquad
+d_n=(n+1)(n+2).
+\end{equation}
+After choosing a complete eigenspinor basis, any quadratic CAR-preserving Hamiltonian can be written in Nambu form. Suppressing spinor-harmonic and degeneracy labels,
+\begin{equation}
+i\frac{d}{d\eta}
+\begin{pmatrix}
+ a_n\\ b_n^\dagger
+\end{pmatrix}
+=
+\sum_m
+\begin{pmatrix}
+ A_{nm} & B_{nm}\\
+ -B_{nm}^* & -A_{nm}^*
+\end{pmatrix}
+\begin{pmatrix}
+ a_m\\ b_m^\dagger
+\end{pmatrix},
+\label{eq:nambu}
+\end{equation}
+with
+\begin{equation}
+A=A^\dagger,
+\qquad
+B=-B^T.
+\end{equation}
+The matrices contain the full time-dependent quadratic Hamiltonian, including the spatially varying effective pseudoscalar background if such a background is supplied.
+
+\begin{keyresult}
+The matrices $A_{nm}$ and $B_{nm}$ are not evaluated here. No particle-production probability is claimed. OP-23 requires: (i) a specified microscopic $a(\eta)$ and $\Sigma_5$; (ii) evaluation of the mode matrix elements; (iii) solution of the evolution; (iv) proof of CAR preservation and unitary implementability of the induced Bogoliubov map in the chosen Fock representation; (v) imposition of the quotient-compatible quantum state; and (vi) computation of an invariant observable.
+\end{keyresult}
+
+\subsection{Baryogenesis Obstruction and Necessary Escape Conditions}
+
+This subsection does not demonstrate baryogenesis. It establishes a hierarchy of necessary conditions.
+
+\textbf{Obstruction 1: covering-space CP-odd cancellation.} After choosing an orientation on the universal-cover $S^3$, write the orientation-line section as $\Sigma_5=\sigma_5 e_{\mathrm{or}}$. The equivariance condition gives $\sigma_5\circ r=-\sigma_5$. The positive volume density $d\mu_h=\sqrt h\,d^3x$ is $r$-invariant, so
+\begin{equation}
+\int_{S^3}\sigma_5(x)\,d\mu_h(x)=0.
+\end{equation}
+This is a statement about a chosen covering-space representative. It does not define a quotient observable and does not by itself preclude a defect or local-system-valued observable.
+
+\textbf{Obstruction 2: twisted $B-L$ current.} The current is transformed into its conjugate under the deck action and therefore is naturally twisted. The ordinary charge $\int *J_{B-L}$ is not automatically a gauge-invariant quotient observable.
+
+\textbf{Obstruction 3: compact-slice Gauss law.} Since the spatial slice is compact, a UV gauged $B-L$ observable must satisfy the corresponding Gauss constraint. Any proposed low-energy asymmetry therefore requires an explicit account of the gauge sector, condensates, and any compensating flux or charge.
+
+\textbf{Obstruction 4: full-cycle consistency.} A source that is locally nonzero need not generate a nonzero physical asymmetry after one complete deck cycle. The physical observable must satisfy quotient invariance and its full-cycle evolution must be computed.
+
+\textbf{Possible escape channels include:}
+\begin{enumerate}
+\item defect-localized transport associated with a genuinely quotient-invariant observable;
+\item a low-energy sector in which an appropriate asymmetry observable survives after gauge symmetry breaking;
+\item compensating gauge, hidden-sector, or defect flux that satisfies the Gauss constraint while permitting a local asymmetry;
+\item a nontrivial deck-equivariant/Floquet quantum sector whose physical observables are invariant under the quotient action.
+\end{enumerate}
+
+\textbf{Necessary conditions.} Any successful mechanism must supply simultaneously:
+\begin{enumerate}
+\item a gauge-invariant, quotient-compatible asymmetry observable (OP-6);
+\item a microscopic $B-L$-violating source and rate calculation (OP-15);
+\item a CP-odd source term and its microscopic phase (OP-13);
+\item a quantum state for which the source and transport observables are defined (OP-2, OP-19);
+\item transport with a nonzero quotient-compatible result after the full cycle (OP-14, OP-21);
+\item a Boltzmann/quantum-kinetic network including sphaleron conversion (OP-16).
+\end{enumerate}
+
+\begin{keyresult}
+No quantitative baryon asymmetry is claimed. The present result is an obstruction analysis and a definition of the conditions a successful baryogenesis calculation would have to satisfy.
+\end{keyresult}
+
+\section{Smith-Map Anomaly Framework and the Pure-Gravitational Obstruction}
+\label{sec:anomaly}
+
+\subsection{Three-Stage Formulation}
+
+The relevant anomaly technology is a bordism-level Smith correspondence. In the standard $\mathrm{Spin}^{\mathbb Z_4}$ setting, the known relation is
+\begin{equation}
+\Omega_5^{\mathrm{Spin}^{\mathbb Z_4}}
+\simeq
+\Omega_4^{\Pin^+}
+\simeq
+\mathbb Z_{16}
+\end{equation}
+with the Smith construction relating a five-dimensional generalized-spin background with a suitable order-parameter/section to its four-dimensional Pin$^+$ defect~\cite{HasonKomargodskiThorngren,GarciaEtxebarria}. The present problem is more general because the full proposed construction contains gauge and global deck data beyond the minimal $\mathrm{Spin}^{\mathbb Z_4}$ structure.
+
+\textbf{Stage I: Specify the generalized 5D data.} A future mixed calculation must specify a closed or bordant five-dimensional generalized background
+\begin{equation}
+(Y_5,P_{\mathrm{local}},P_G,s)
+\end{equation}
+with all local generalized-spin, gauge, deck-equivariant, and order-parameter data, together with the equivalence relation under which the bordism group is defined.
+
+\textbf{Stage II: Smith defect construction.} The order parameter $s$ or its associated section must have a transverse zero locus carrying the induced Pin$^+$ structure and gauge/deck data. The three-dimensional physical defect in the cosmological spacetime is not by itself the input to the five-dimensional bordism homomorphism.
+
+\textbf{Stage III: Mixed anomaly test.} Only after the generalized structure and its bordism class have been defined can one evaluate the corresponding Dai--Freed/eta invariant. A nontrivial mixed value would constitute a genuinely generalized anomaly realization. The present paper does not evaluate that invariant.
+
+\begin{keyresult}
+\textbf{Exact pure-gravitational result.} Let $\Klein=S(E)$ with $E=\mu\oplus\varepsilon^3$ as below. Then both Pin$^+$ structures on $\Klein$ extend across the disk bundle $D(E)$. Hence
+\begin{equation}
+[\Klein,P_{\Pin^+}]=0\in\Omega_4^{\Pin^+}\cong\mathbb Z_{16}
+\end{equation}
+for each of the two Pin$^+$ structures. The Klein Block is therefore not a generator of the pure-gravitational Pin$^+$ bordism group. Any nontrivial anomaly compatible with this geometry must use additional generalized gauge, fermion, or deck data.
+\end{keyresult}
+
+\subsection{The 16-Fermion Relation and Its Correct Scope}
+
+The known $\mathrm{Spin}^{\mathbb Z_4}$/Pin$^+$ anomaly framework relates a $q_X=1\bmod4$ Weyl fermion to one three-dimensional Pin$^+$ Majorana defect mode in the Smith construction. Sixteen such Weyl components have total index
+\begin{equation}
+16\equiv0\pmod{16},
+\end{equation}
+and this is the origin of the familiar 16-fermion relation in the anomaly literature~\cite{GarciaEtxebarria}. The statement is a property of the fermion spectrum together with the specified generalized symmetry structure. It is not the statement that the present Klein Block represents the nonzero generator of $\Omega_4^{\Pin^+}$.
+
+\begin{structuralclaim}[Fermion-spectrum $\mathbb Z_{16}$ relation] \label{claim:16}
+For the chosen anomaly-framework assignment, the minimal gauged-$B-L$ generation contains
+\begin{equation}
+6_Q+3_{u_R}+3_{d_R}+2_L+1_{e_R}+1_{\nu_R}=16
+\end{equation}
+Weyl components in the all-right-moving count, with every field carrying $q_X\equiv1\pmod4$. Therefore the associated spectrum index is $16\equiv0\pmod{16}$. This applies the known anomaly framework to the present charge assignment; it does not derive the mixed anomaly of the Klein Block.
+\end{structuralclaim}
+
+\begin{theorem}[Pure $\mathrm{Pin}^+$ Bordism Class of the Klein Block] \label{thm:pintrivial}
+Let $E=\mu\oplus\varepsilon^3$ be the rank-four real vector bundle over $\Sone$, with $\mu$ the M\"obius line bundle, and let $\Klein=S(E)$ be its unit-sphere bundle. Then $\Klein$ admits exactly two $\Pin^+$ structures, and both represent the trivial element of $\Omega_4^{\Pin^+}$.
+\end{theorem}
+\begin{proof}
+Let $W=D(E)$ be the associated unit-disk bundle. Its boundary is
+\begin{equation}
+\partial W=S(E)=\Klein.
+\end{equation}
+The disk bundle deformation retracts onto the base $\Sone$, and stably
+\begin{equation}
+TW\simeq\pi^*(T\Sone\oplus E).
+\end{equation}
+Since $T\Sone$ is oriented and $E=\mu\oplus\varepsilon^3$, the bundle $T\Sone\oplus E$ has
+\begin{equation}
+w_2(T\Sone\oplus E)=0.
+\end{equation}
+Hence $W$ admits $\Pin^+$ structures. Moreover,
+\begin{equation}
+H^1(W;\Ztwo)\cong\Ztwo,
+\qquad
+H^1(\Klein;\Ztwo)\cong\Ztwo.
+\end{equation}
+The restriction map
+\begin{equation}
+H^1(W;\Ztwo)\longrightarrow H^1(\Klein;\Ztwo)
+\end{equation}
+is an isomorphism because both fibrations have simply connected fiber ($D^3$ and $S^2$, respectively) and base $\Sone$. Pin$^+$ structures, when they exist, form torsors over $H^1(-;\Ztwo)$~\cite{KirbyTaylor}. Therefore the two Pin$^+$ structures on $W$ restrict bijectively to the two Pin$^+$ structures on $\Klein$. Both boundary structures extend across $W$, so both represent the zero element of $\Omega_4^{\Pin^+}$.
+\end{proof}
+
+\begin{remark}[Independent characteristic-class check]
+The orientation line of $\Klein$ is pulled back from the generator $a\in H^1(\Sone;\Ztwo)$. Hence
+\begin{equation}
+w_1(\Klein)^2=0,
+\qquad
+w_1(\Klein)^4=0.
+\end{equation}
+This is a consistency check with the explicit null-bordism. It is not used as a substitute for the bordism proof.
+\end{remark}
+
+\subsection{Status of the 16-Fermion Count}
+
+\begin{table}[H]
+\centering
+\caption{Status of each component of the 16-fermion argument.}
+\begin{tabular}{@{}p{0.50\textwidth}p{0.40\textwidth}@{}}
+\toprule
+\textbf{Statement} & \textbf{Status} \\
+\midrule
+16 Weyl components per minimal gauged-$B-L$ generation & Spectrum counting \\
+$q_X\equiv1\pmod4$ assignment & Model input / derived from chosen charges \\
+Ordinary local anomaly cancellation & Explicitly checked \\
+General $\mathbb Z_4/\Pin^+$ relation & Known result~\cite{GarciaEtxebarria} \\
+Pure $\Pin^+$ class of the present Klein Block & \textbf{Derived: $0$} \\
+Present defect realizes the corresponding zero modes & \textbf{Open (OP-12)} \\
+Topology enforces exactly 16 & \textbf{Not established} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{remark}[Novelty Statement]
+The 16-component count is not claimed as a new anomaly result. The proposed novelty is a possible use of the specific Klein Block geometry together with additional generalized gauge/deck data to define a mixed anomaly problem. The pure-gravitational route is shown here to be trivial.
+\end{remark}
+
+\subsection{Ordinary Gauge Anomalies}
+
+The ordinary perturbative anomaly conditions are distinct from the fermionic $\mathbb Z_{16}$ discussion~\cite{Davighi}. With the multiplicities shown in the fermion table, one generation gives
+\begin{align}
+\sum Y_{\mathrm{int}}&=2(-3)+6(1)+6+3(-4)+3(2)=0,\\
+\sum (B-L)_{\mathrm{int}}&=2(3)+6(-1)-3+3(1)+3(1)-3=0,\\
+\sum Y_{\mathrm{int}}^3&=2(-3)^3+6(1)^3+6^3+3(-4)^3+3(2)^3=0,\\
+\sum (B-L)_{\mathrm{int}}^3&=2(3)^3+6(-1)^3+(-3)^3+3(1)^3+3(1)^3+(-3)^3=0,\\
+\sum Y_{\mathrm{int}}^2(B-L)_{\mathrm{int}}&=0,\\
+\sum Y_{\mathrm{int}}(B-L)_{\mathrm{int}}^2&=0.
+\end{align}
+The non-Abelian mixed anomalies also vanish:
+\begin{equation}
+\mathcal A_{SU(3)^2Y}=\mathcal A_{SU(3)^2(B-L)}
+=\mathcal A_{SU(2)^2Y}=\mathcal A_{SU(2)^2(B-L)}=0.
+\end{equation}
+There are four $SU(2)$ doublets per generation, so the Witten $SU(2)$ global anomaly is absent. These checks establish ordinary gauge consistency of the displayed gauged-$B-L$ spectrum; they do not establish any nontrivial Pin$^+$ or mixed bordism class.
+
+\section{Epistemic Firewall and Open Problems}
+\label{sec:firewall}
+
+The remaining questions are organized by logical dependency rather than by optimism or pessimism. Each item is an explicit test of the proposed model.
+
+\subsection*{Foundational Prerequisites}
+These items block the physical interpretation of later calculations.
+
+\begin{enumerate}
+\item \textbf{OP-6: Global asymmetry observable.} Construct a gauge-invariant and quotient-compatible low-energy asymmetry observable, including the compact-slice Gauss constraint and the effects of the symmetry-breaking sector.
+\item \textbf{OP-18: Full generalized background bundle.} Construct the representation-compatible local generalized fermion bundle, gauge data, and global deck lift. This includes the global Standard-Model center quotient and all consistency conditions on $U_F$.
+\item \textbf{OP-2: Quotient-compatible quantum state.} Construct a sufficiently regular state satisfying the deck/Floquet condition. Establish existence, Fock-space/unitary implementability where applicable, and the microlocal regularity needed for renormalized observables.
+\item \textbf{OP-19: Physical quotient QFT.} Determine whether an acceptable quantum field theory and renormalized local observables exist on the chronology-violating quotient for the selected state and field content.
+\end{enumerate}
+
+\subsection*{Core Open Problems}
+These determine whether the central geometric and anomaly structures actually extend to physics.
+
+\begin{enumerate}
+\setcounter{enumi}{4}
+\item \textbf{OP-4: Mixed Smith construction and evaluation.} Specify the full five-dimensional generalized bordism problem and evaluate its invariant. The calculation must determine whether the generalized structure extends over the explicit disk-bundle null-bordism or whether the added gauge/deck data obstruct extension.
+\item \textbf{OP-1: Twisted Poincar\'e fixed point.} Construct a smooth nonsingular Einstein--matter solution satisfying the twisted return equation; then determine its stability.
+\item \textbf{OP-3: Full SM Lagrangian descent.} Verify generalized-CP, Yukawa, Higgs, gauge, flavor, and global quotient consistency.
+\item \textbf{OP-8: Microscopic condensate sector.} Define a gauge-invariant microscopic interaction whose quantum dynamics can generate the proposed orientation-line condensate.
+\item \textbf{OP-9: Condensation, transversality, and stability.} Prove existence of a nonzero condensate away from the nodal locus, verify transversality, and determine the stability of the defect configuration.
+\item \textbf{OP-10: Alignment of Defects A and B.} Determine whether the orientation-odd CP defect and the $\mathbb Z_4^X$ sign-line defect dynamically align or are isotopic.
+\end{enumerate}
+
+\subsection*{Phenomenological Programme}
+These items determine whether the completed structure can reproduce known cosmological physics.
+
+\begin{enumerate}
+\setcounter{enumi}{11}
+\item \textbf{OP-7: Exact condensate profile.} Compute $\Sigma_5(x)$ in a specified state using a covariant renormalization prescription.
+\item \textbf{OP-11: Defect stress tensor and backreaction.} Compute $\langle T_{\mu\nu}\rangle_{\mathrm{ren}}$ and determine whether the assumed FLRW background survives self-consistently.
+\item \textbf{OP-12: Localized fermion modes.} Determine whether the one-sided $S^2\times S^1$ defect supports the expected localized modes in the actual microscopic theory.
+\item \textbf{OP-13: CP-odd source term.} Derive the microscopic CP-violating source rather than identifying an order parameter with a source by assumption.
+\item \textbf{OP-14: Quotient-compatible baryogenesis observable.} Identify an invariant quantity not eliminated by the covering-space cancellation and evaluate its full-cycle evolution.
+\item \textbf{OP-15: $B-L$-violating dynamics.} Determine the rate, phase structure, and transport role of the Majorana sector allowed by~\eqref{eq:majorana}.
+\item \textbf{OP-16: Boltzmann/quantum-kinetic network.} Solve the coupled transport equations, including sphaleron conversion where applicable.
+\item \textbf{OP-17: Quantitative baryon asymmetry.} Determine whether the completed mechanism can reproduce the observed order of magnitude of the baryon-to-photon asymmetry.
+\item \textbf{OP-20: Vacuum polarization.} Compute the renormalized stress tensor and related observables on the chronology-violating quotient for the constructed state.
+\item \textbf{OP-21: Full-cycle cancellation test.} Evaluate the invariant full-cycle source/transport observable, not merely a local CP-odd integral.
+\item \textbf{OP-22: Tolman entropy consistency.} Determine whether irreversible entropy production can coexist with the proposed cyclic quotient and quantum state.
+\item \textbf{OP-23: Mode coupling, Bogoliubov evolution, and implementability.} Evaluate $A_{nm}[a,\Sigma_5]$ and $B_{nm}[a,\Sigma_5]$, solve the mode system, prove the necessary operator-theoretic implementability conditions, and compute invariant observables.
+\end{enumerate}
+
+\section{Open Research Programme: What the Framework Gains}
+\label{sec:programme}
+
+Each open problem, if resolved, upgrades the framework by a specific amount. Conversely, each failure constrains or falsifies a corresponding layer of the proposed model.
+
+\begin{enumerate}
+\item \textbf{If the mixed Smith problem is solved (OP-4, OP-18):} a nontrivial generalized invariant would have to arise from the additional gauge/deck/fermion structure, because the pure-gravitational Klein Block class is exactly zero. A successful result would therefore be genuinely mixed rather than a claim that the underlying spacetime itself generates $\mathbb Z_{16}$.
+
+\emph{Failure implies:} If every admissible generalized structure extends over the relevant bordism, then the proposed anomaly route is trivial for this topology and model data.
+
+\item \textbf{If the twisted Einstein--matter solution is found (OP-1):} the kinematic periodicity theorem becomes realized by an actual nonsingular dynamical solution. Stability remains a separate test.
+
+\emph{Failure implies:} the Klein Block may remain a valid kinematic quotient without furnishing a nonsingular dynamical cosmology in the proposed matter sector.
+
+\item \textbf{If the quantum state is constructed (OP-2, OP-19):} quotient-compatible particle, condensate, and stress-tensor observables become mathematically definable. QFT regularity and operator-theoretic implementability must still be verified.
+
+\emph{Failure implies:} the programme remains classical/topological rather than a completed quantum model.
+
+\item \textbf{If the quotient-compatible asymmetry observable is defined (OP-6, OP-14):} baryogenesis becomes a well-posed calculation in physical observables rather than a covering-space proxy.
+
+\emph{Failure implies:} the baryogenesis programme terminates in this quotient formulation even if local CP-odd structures exist.
+
+\item \textbf{If the microscopic condensate sector is defined (OP-8, OP-9):} $\Sigma_5$ can be computed rather than assumed, and the conditional nodal theorem can be tested dynamically.
+
+\emph{Failure implies:} the nodal theorem remains mathematically valid under its hypotheses but lacks a physical order parameter in the proposed theory.
+
+\item \textbf{If the full SM Lagrangian descends (OP-3):} the framework becomes a candidate formulation of the Standard Model on the selected spacetime, subject to the quantum-state and anomaly tests.
+
+\emph{Failure implies:} the proposed topology cannot host the intended Standard Model implementation without changing the field content or global structure.
+
+\item \textbf{If Defects A and B align (OP-10):} the geometric CP defect and the generalized gauge/anomaly defect can be interpreted as one physical sector.
+
+\emph{Failure implies:} they remain distinct structures and any mechanism linking them must be supplied separately.
+
+\item \textbf{If the full observable and transport programme succeeds (OP-6, OP-13--OP-17, OP-21):} the three-paper framework acquires a quantitative cosmological prediction that can be compared with data.
+
+\emph{Failure implies:} the geometric/ontological construction may still have mathematical interest, but it does not furnish the proposed baryogenesis mechanism.
+\end{enumerate}
+
+\section{Conclusion}
+
+\textbf{What is proven.} The paper establishes compatibility of the twisted return condition with constraint propagation under explicit evolution and action-symmetry hypotheses; kinematic periodicity of any descended FLRW scale factor; conditional kinetic-sector equivariance of fermions once the required generalized bundle data exist; the conditional nodal theorem for an orientation-odd condensate; one-sidedness of the resulting $S^2\times S^1$ defect; the line-bundle criterion for matching the two defect classes; and the ordinary anomaly cancellation of the displayed gauged-$B-L$ spectrum. Most importantly, it proves that the pure-gravitational $\Pin^+$ bordism class of the Klein Block is trivial for both Pin$^+$ structures.
+
+\textbf{What is formulated as conditional.} The generalized fermion gluing law, the microscopic condensate interaction, the defect identification, the mode equation, the quotient-compatible asymmetry observable, and the mixed Smith construction are all formulated with their missing hypotheses made explicit.
+
+\textbf{What remains open.} The non-linear twisted cosmological solution, full generalized SM bundle, quotient quantum state, mixed anomaly invariant, microscopic condensate, localized modes, transport, backreaction, entropy consistency, and quantitative baryon asymmetry remain open problems.
+
+\textbf{What the framework gains.} The paper does not require these open questions to be silently treated as established facts. Instead, it shows exactly how they enter the proposed model and what each successful or failed resolution would mean. This makes Document III a constructive foundation for future research rather than a claim of completed physical validation.
+
+The central conclusion is therefore deliberately two-sided:
+\begin{equation*}
+\boxed{\begin{gathered}
+\text{Klein topology alone does not produce the desired}\
+\text{pure-gravitational }\mathbb Z_{16}\text{ class}
+\end{gathered}}
+\end{equation*}
+and, at the same time,
+\begin{equation*}
+\boxed{\begin{gathered}
+\text{the complete generalized geometry + fermion + gauge + deck structure}\\
+\text{remains a precise testable possibility.}
+\end{gathered}}
+\end{equation*}
+The three-paper programme consequently reaches a meaningful candidate-model stage: the ontological premise selects the topological structure in the preceding papers, while the present paper determines the dynamical and quantum consistency architecture required for physical completion. Future work can now confirm, constrain, modify, or falsify the resulting model by explicit calculations.
+
+\begin{excludedclaims}
+This paper explicitly does not claim:
+\begin{enumerate}
+\item that the three-paper programme has proved the proposed model to be the actual physical universe;
+\item that a nonsingular periodic Einstein--matter solution exists;
+\item that the full Standard Model descends to the Klein Block;
+\item that the mixed Smith invariant has been evaluated;
+\item that the quantum state on the quotient has been constructed;
+\item that the exact condensate has been computed;
+\item that baryogenesis has been demonstrated or that a quantitative $\eta_B$ has been derived;
+\item that the Tolman entropy problem has been resolved;
+\item that the 16-fermion count is a topological prediction of the Klein Block;
+\item that the pure-gravitational $\Pin^+$ class of the Klein Block is nontrivial.
+\end{enumerate}
+\end{excludedclaims}
+
+\appendix
+\section{Explicit Charge and Anomaly Checks}
+\label{app:anomalies}
+
+For clarity, the anomaly calculation uses the six Weyl multiplets in the all-right-moving convention, with multiplicities $(2,6,1,3,3,1)$ for $(\ell_L^c,q_L^c,e_R,u_R,d_R,\nu_R)$. The displayed $Y_{\mathrm{int}}$ and $(B-L)_{\mathrm{int}}$ charges reproduce the standard gauged-$B-L$ spectrum after the common normalization specified in Section~\ref{sec:fermion}.
+
+The mixed Abelian trace is
+\begin{equation}
+\operatorname{Tr}\!\left(Y_{\mathrm{int}}(B-L)_{\mathrm{int}}\right)=-48
+\end{equation}
+per generation, so zero kinetic mixing is a renormalization condition rather than a radiatively protected equality for the displayed matter sector. By contrast, all cubic and gravitational anomaly sums displayed in Section~\ref{sec:anomaly} vanish.
+
+The $X$ charges satisfy
+\begin{equation}
+\begin{aligned}
+q_X(\text{every fermion})&\equiv1\pmod4,
+& q_X(H)&\equiv2\pmod4,\\
+q_X(\Phi_4)&\equiv0\pmod4,
+& q_X(\Phi_2)&\equiv2\pmod4.
+\end{aligned}
+\end{equation}
+Consequently $\Phi_4$ leaves $\mathbb Z_4^X$ unbroken and either $H$ or $\Phi_2$ can reduce it to the order-two subgroup. In the intended chronology the Higgs VEV performs that discrete reduction at electroweak symmetry breaking, while $\Phi_2$ later generates the Majorana operator.
+
+The gauge-invariant Majorana operator is
+\begin{equation}
+\mathcal L_M=-\frac12y_N\Phi_2\nu_R\nu_R+\mathrm{h.c.},
+\end{equation}
+with vanishing total $B-L$ and $X$ charges as shown above.
+
+\section{Sphere-Bundle Description and One-Sided Defect}
+\label{app:geometry}
+
+Let $\mu\to\Sone$ denote the M\"obius line bundle and set $E=\mu\oplus\varepsilon^3$. The reflection of one coordinate on $S^3$ is the sphere-bundle monodromy of $S(E)$, hence
+\begin{equation}
+\Klein\cong S(E),
+\qquad
+W_A=S(\varepsilon^3)\cong S^2\times S^1.
+\end{equation}
+The normal line of $W_A$ inside $S(E)$ is canonically the restriction of $\mu$. Therefore
+\begin{equation}
+\nu W_A\cong\pi^*\mu,
+\qquad
+w_1(\nu W_A)=\pi^*w_1(\mu),
+\end{equation}
+and the temporal generator obeys
+\begin{equation}
+\left\langle w_1(\nu W_A),[\gamma_t]\right\rangle=1\pmod2.
+\end{equation}
+This gives a global bundle proof of one-sidedness.
+
+\section{Canonical Meaning of the Formal Nambu Equation}
+\label{app:modes}
+
+After the standard conformal rescaling of a Dirac field on
+\begin{equation}
+ds^2=a^2(\eta)\left(-d\eta^2+d\Omega_3^2\right),
+\end{equation}
+the free spatial Dirac operator on the unit $S^3$ has eigenvalues $\pm(n+3/2)$ with degeneracy $(n+1)(n+2)$~\cite{CortezDiracFRW}. Let $a_n$ and $b_n$ denote corresponding annihilation operators after choosing a complete orthonormal eigenspinor basis. Any quadratic CAR-preserving Hamiltonian can be written as
+\begin{equation}
+i\frac{d}{d\eta}
+\begin{pmatrix}a\\b^\dagger\end{pmatrix}
+=
+\begin{pmatrix}A&B\\-B^*&-A^*\end{pmatrix}
+\begin{pmatrix}a\\b^\dagger\end{pmatrix},
+\end{equation}
+with
+\begin{equation}
+A=A^\dagger,
+\qquad
+B=-B^T.
+\end{equation}
+For a genuine infinite-dimensional fermionic Bogoliubov transformation, unitary implementation in a fixed Fock representation requires the anomalous part to satisfy the appropriate Hilbert--Schmidt condition. The present paper does not evaluate that condition; it is included explicitly in OP-23.
+
+\section*{Acknowledgments}
+This research was conducted entirely independently, without institutional affiliation or external support. The scope of the Three-Paper Architecture spans the deepest foundations of human inquiry---from the ontology of consciousness and the axiomatic prohibition of brute facts, to the differential topology of the Klein Block, to the quantum field theory of anomaly constraints. 
+
+Because this program demands absolute rigor across such a vast, interdisciplinary landscape, the author used AI language models as computational co-auditors and structural stress-testers. The AI assisted in symbolic verification, mathematical calculations, and document preparation at every stage of the development.
+
+However, the core concepts, the axiomatic foundation, and the architectural vision are entirely the author's own. Every mathematical claim, physical assertion, and logical deduction has been independently conceived and rigorously verified by the author. The AI provided the computational audit; the author provides the truthmaker. The author assumes full and sole responsibility for the correctness, integrity, and physical interpretation of the results.
+
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}
+\CanonBibliographySetup
+
+\bibitem{Turok2026}
+K.~Tzanavaris, L.~Boyle, and N.~Turok, ``The free boundary problem in general relativity,'' arXiv:2606.18128 [gr-qc] (2026).
+
+\bibitem{BoyleFinnTurok}
+L.~Boyle, K.~Finn, and N.~Turok, ``CPT-Symmetric Universe,'' \textit{Phys. Rev. Lett.} \textbf{121}, 251301 (2018), arXiv:1803.08928.
+
+\bibitem{Witten}
+E.~Witten, ``Fermion path integrals and topological phases,'' \textit{Rev. Mod. Phys.} \textbf{88}, 035001 (2016).
+
+\bibitem{GarciaEtxebarria}
+I.~Garc\'ia-Etxebarria and M.~Montero, ``Dai--Freed anomalies in particle physics,'' JHEP \textbf{08}, 003 (2019).
+
+\bibitem{TachikawaYonekura}
+Y.~Tachikawa and K.~Yonekura, ``Why are fractional charges of orientifolds compatible with Dirac quantization?,'' \textit{SciPost Phys.} \textbf{7}, 058 (2019).
+
+\bibitem{HasonKomargodskiThorngren}
+I.~Hason, Z.~Komargodski, and N.~Thorngren, ``Anomaly Matching in the Symmetry Broken Phase: Domain Walls, CPT, and the Smith Isomorphism,'' \textit{SciPost Phys.} \textbf{8}, 062 (2020), arXiv:1910.14039 [hep-th].
+
+\bibitem{Davighi}
+J.~Davighi, B.~Gripaios, and N.~Lohitsiri, ``Global anomalies in the Standard Model(s) and beyond,'' JHEP \textbf{07}, 232 (2020), arXiv:1910.11277 [hep-th].
+
+\bibitem{Greene2026}
+B.~Greene, D.~Kabat, J.~Levin, and M.~Porrati, ``Klein Bottle Cosmology,'' \textit{Phys. Rev. D} \textbf{113}, 063576 (2026).
+
+\bibitem{GreeneCompact}
+B.~Greene, D.~Kabat, J.~Levin, and M.~Porrati, ``Compactification Without Orientation, or a Topological Scenario for CP Violation,'' \textit{Phys. Rev. D} \textbf{113}, 065020 (2026).
+
+\bibitem{KayRadzikowskiWald}
+B.~S.~Kay, M.~J.~Radzikowski, and R.~M.~Wald, ``Quantum field theory on spacetimes with a compactly generated Cauchy horizon,'' Commun. Math. Phys. \textbf{183}, 533--556 (1997), arXiv:gr-qc/9603012.
+
+\bibitem{Wald}
+R.~M.~Wald, \textit{General Relativity}, University of Chicago Press, 1984.
+
+\bibitem{DaiFreed}
+X.~Dai and D.~S.~Freed, ``$\eta$-invariants and determinant lines,'' J. Math. Phys. \textbf{35}, 5155--5194 (1994).
+
+\bibitem{KirbyTaylor}
+R.~C.~Kirby and L.~R.~Taylor, ``Pin structures on low-dimensional manifolds,'' in \textit{Geometry of Low-Dimensional Manifolds, 2} (Durham, 1989), London Mathematical Society Lecture Note Series \textbf{151}, Cambridge University Press, 1990, pp.~177--242.
+
+\bibitem{CortezDiracFRW}
+J.~Cortez, I.~Inaci{o} Rodrigues, M.~Mart\'in-Benito, and J.~Velhinho, ``On the Uniqueness of the Fock Quantization of the Dirac Field in the Closed FRW Cosmology,'' \textit{Adv. Math. Phys.} (2018), Article 2450816, arXiv:1803.08272.
+
+\bibitem{CanonWhy}
+Canon, ``Shape of Reality: The Necessity of the Zero-Energy Klein Block,'' (Companion Philosophical Manuscript, Document I of the Three-Paper Architecture), Zenodo, 2026, \href{https://doi.org/10.5281/zenodo.22766109}{doi:10.5281/zenodo.22766109}.
+
+\bibitem{CanonWhat}
+Canon, ``The Klein Block: Topological Uniqueness of the Non-Orientable $S^3$-Bundle over $S^1$,'' (Companion Mathematical Manuscript, Document II of the Three-Paper Architecture), Zenodo, 2026, \href{https://doi.org/10.5281/zenodo.22766247}{doi:10.5281/zenodo.22766247}.
+
+\end{thebibliography}
+
+\end{document}

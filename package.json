@@ -1,0 +1,27 @@
+{
+  "name": "necessary-universe",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Necessary Universe \u2014 a three-paper research series on the ontological, topological and dynamical structure of physical reality.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "preview": "npx --yes serve out -l 3000",
+    "typecheck": "tsc --noEmit",
+    "content": "python3 tools/latex-to-json.py && node tools/validate-math.js",
+    "check:math": "node tools/validate-math.js"
+  },
+  "dependencies": {
+    "next": "16.3.5",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "katex": "0.18.7"
+  },
+  "devDependencies": {
+    "@types/katex": "^0.16.7",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}

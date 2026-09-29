@@ -1,0 +1,1140 @@
+% ============================================================
+% DOCUMENT II: THE TOPOLOGICAL ENGINE
+% ============================================================
+
+\documentclass[11pt]{article}
+
+% ---------- Engine / typography ----------
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\setmainfont{Noto Serif}
+\setsansfont{Noto Sans}
+\setmonofont{DejaVu Sans Mono}
+\usepackage{microtype}
+\microtypesetup{protrusion=true,expansion=true}
+\usepackage{setspace}
+\setstretch{1.06}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.58em}
+\setlength{\emergencystretch}{2.5em}
+\clubpenalty=10000
+\widowpenalty=10000
+
+% ---------- Page geometry ----------
+\usepackage[
+  a4paper,
+  left=1.00in,
+  right=1.00in,
+  top=0.88in,
+  bottom=0.92in,
+  headheight=22pt,
+  headsep=0.26in,
+  footskip=0.34in
+]{geometry}
+
+% ---------- Mathematics ----------
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{unicode-math}
+\setmathfont{Latin Modern Math}
+
+% ---------- Structure / lists / tables ----------
+\usepackage{enumitem}
+\usepackage{array,booktabs,longtable,tabularx}
+\setlist{
+  leftmargin=*,
+  itemsep=0.22em,
+  topsep=0.38em,
+  parsep=0pt,
+  partopsep=0pt
+}
+\setlist[enumerate]{labelsep=0.55em}
+\setlist[itemize]{labelsep=0.55em}
+
+% ---------- Color ----------
+\usepackage{xcolor}
+\definecolor{seriesInk}{HTML}{1F2933}
+\definecolor{seriesAccent}{HTML}{8A3B4A}
+\definecolor{seriesSteel}{HTML}{40566F}
+\definecolor{seriesMuted}{HTML}{66727E}
+\definecolor{seriesPaper}{HTML}{F7F4EE}
+\definecolor{seriesRule}{HTML}{C9D0D6}
+
+% ---------- Boxes / drawing ----------
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{tikz}
+
+% ---------- Sectioning ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\sffamily\color{seriesInk}}
+  {\color{seriesAccent}\thesection}
+  {0.72em}
+  {}
+  [\vspace{3pt}{\color{seriesAccent}\titlerule[0.85pt]}]
+\titlespacing*{\section}{0pt}{3.0ex plus .8ex minus .2ex}{1.55ex plus .2ex}
+
+\titleformat{name=\section,numberless}
+  {\normalfont\Large\bfseries\sffamily\color{seriesInk}}
+  {}
+  {0pt}
+  {}
+  [\vspace{3pt}{\color{seriesAccent}\titlerule[0.85pt]}]
+\titlespacing*{name=\section,numberless}{0pt}{3.0ex plus .8ex minus .2ex}{1.55ex plus .2ex}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\sffamily\color{seriesSteel}}
+  {\color{seriesAccent}\thesubsection}
+  {0.68em}
+  {}
+\titlespacing*{\subsection}{0pt}{2.35ex plus .6ex minus .2ex}{0.82ex plus .1ex}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\sffamily\color{seriesSteel}}
+  {\thesubsubsection}
+  {0.62em}
+  {}
+\titlespacing*{\subsubsection}{0pt}{1.8ex plus .4ex minus .2ex}{0.55ex plus .1ex}
+
+\titleformat{name=\subsection,numberless}
+  {\normalfont\large\bfseries\sffamily\color{seriesSteel}}
+  {}
+  {0pt}
+  {}
+\titlespacing*{name=\subsection,numberless}{0pt}{2.35ex plus .6ex minus .2ex}{0.82ex plus .1ex}
+
+\renewcommand{\sectionmark}[1]{\markboth{\thesection\enspace #1}{}}
+\renewcommand{\subsectionmark}[1]{}
+
+% ---------- Theorem infrastructure ----------
+\newtheoremstyle{canonmath}
+  {8pt}{8pt}
+  {\normalfont}
+  {0pt}
+  {\bfseries\sffamily\color{seriesAccent}}
+  {.}
+  {0.55em}
+  {}
+\theoremstyle{canonmath}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newtheoremstyle{canonpostulate}
+  {8pt}{8pt}
+  {\normalfont}
+  {0pt}
+  {\bfseries\sffamily\color{seriesSteel}}
+  {.}
+  {0.55em}
+  {}
+\theoremstyle{canonpostulate}
+\newtheorem{postulate}{Physical Postulate}[section]
+
+\newtheoremstyle{canonproposition}
+  {8pt}{8pt}
+  {\normalfont}
+  {0pt}
+  {\bfseries\sffamily\color{seriesMuted}}
+  {.}
+  {0.55em}
+  {}
+\theoremstyle{canonproposition}
+\newtheorem{proposition}{Conditional Physical Proposition}[section]
+\newtheorem{assumption}{Modeling Assumption}[section]
+\newtheorem{principle}{Modeling Convention}[section]
+
+\providecommand{\Klein}{\mathcal{K}}
+\providecommand{\M}{\mathcal{M}}
+\providecommand{\R}{\mathbb{R}}
+\providecommand{\Z}{\mathbb{Z}}
+\providecommand{\Ztwo}{\mathbb{Z}_2}
+\providecommand{\Sone}{S^1}
+\providecommand{\Sthree}{S^3}
+\providecommand{\Diff}{\operatorname{Diff}}
+\providecommand{\id}{\mathrm{id}}
+\providecommand{\Pin}{\operatorname{Pin}}
+\providecommand{\Spin}{\operatorname{Spin}}
+\providecommand{\coker}{\operatorname{coker}}
+\providecommand{\Tr}{\operatorname{Tr}}
+\providecommand{\degfn}{\operatorname{deg}}
+\providecommand{\Hom}{\operatorname{Hom}}
+\providecommand{\Ext}{\operatorname{Ext}}
+\providecommand{\pr}{\operatorname{pr}}
+\providecommand{\Fix}{\operatorname{Fix}}
+\providecommand{\supp}{\operatorname{supp}}
+
+% ---------- Navigation / references ----------
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{bookmark}
+\usepackage{orcidlink}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=seriesSteel,
+  citecolor=seriesAccent,
+  urlcolor=seriesAccent,
+  filecolor=seriesSteel,
+  pdftitle={The Klein Block: Uniqueness of the Non-Orientable S3-Bundle over S1},
+  pdfauthor={Canon},
+  pdfsubject={Conditional classification of the non-orientable S3-bundle over S1},
+  pdfcreator={LuaLaTeX}
+}
+\urlstyle{same}
+
+\pdfstringdefDisableCommands{%
+  \def\ensuremath#1{#1}%
+  \def\mathrm#1{#1}%
+  \def\mathbf#1{#1}%
+  \def\mathbb#1{#1}%
+  \def\mathcal#1{#1}%
+  \def\eta{eta}%
+  \def\not{not}%
+}
+
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\crefname{remark}{Remark}{Remarks}
+\crefname{postulate}{Postulate}{Postulates}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{principle}{Convention}{Conventions}
+\crefname{equation}{Equation}{Equations}
+\crefname{section}{Section}{Sections}
+
+% ---------- Running pages (UPDATED DESIGN) ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize\sffamily\color{seriesMuted}\CanonShortTitle}
+\fancyhead[R]{\footnotesize\sffamily\color{seriesMuted}\CanonStage}
+\fancyfoot[L]{}
+\fancyfoot[R]{\footnotesize\sffamily\color{seriesMuted}\thepage}
+\renewcommand{\headrulewidth}{0.45pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{seriesRule}\leaders\hrule height \headrulewidth\hfill}}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[L]{}
+  \fancyfoot[R]{\footnotesize\sffamily\color{seriesMuted}\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\fancypagestyle{titlepage}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+
+% ---------- TOC ----------
+\setcounter{tocdepth}{2}
+\usepackage{tocloft}
+\setlength{\cftbeforesecskip}{0.42em}
+\setlength{\cftbeforesubsecskip}{0.08em}
+\renewcommand{\cftsecfont}{\sffamily\bfseries\color{seriesInk}}
+\renewcommand{\cftsecpagefont}{\sffamily\bfseries\color{seriesInk}}
+\renewcommand{\cftsubsecfont}{\sffamily\color{seriesMuted}}
+\renewcommand{\cftsubsecpagefont}{\sffamily\color{seriesMuted}}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cfttoctitlefont}{\Large\bfseries\sffamily\color{seriesInk}}
+\setlength{\cftaftertoctitleskip}{1em}
+
+% ---------- Shared series ornaments ----------
+\newcommand{\seriesrule}{%
+  \par\vspace{3pt}
+  {\color{seriesAccent}\rule{\textwidth}{0.85pt}}
+  \par\vspace{2pt}
+}
+\newcommand{\seriesmark}{%
+  \begin{tikzpicture}[baseline=-0.65ex]
+    \draw[seriesAccent,line width=0.7pt] (0,0) -- (0.42,0);
+    \fill[seriesInk] (0.54,0) circle (1.35pt);
+    \draw[seriesAccent,line width=0.7pt] (0.66,0) -- (1.08,0);
+  \end{tikzpicture}%
+}
+
+% ---------- Editorial callout boxes ----------
+\newtcolorbox{keyresult}{
+  enhanced,breakable,
+  colback=white,
+  colframe=seriesInk,
+  boxrule=0.75pt,
+  arc=1.2pt,
+  left=12pt,right=12pt,top=9pt,bottom=9pt,
+  before skip=12pt,after skip=12pt,
+  fontupper=\bfseries\sffamily\small\color{seriesInk}
+}
+
+\newtcolorbox{excludedclaims}{
+  enhanced,breakable,
+  colback=seriesAccent!4!white,
+  colframe=seriesAccent,
+  boxrule=0.75pt,
+  arc=1.2pt,
+  left=12pt,right=12pt,top=9pt,bottom=9pt,
+  before skip=12pt,after skip=12pt,
+  fontupper=\sffamily\small\color{seriesInk},
+  title={\textbf{Excluded Claims}},
+  coltitle=seriesAccent,
+  colbacktitle=seriesAccent!8!white
+}
+
+% ---------- Common title-page block ----------
+\newcommand{\CanonTitlePage}{%
+\begin{titlepage}
+\thispagestyle{titlepage}
+\vspace*{0.62cm}
+{\sffamily\footnotesize\bfseries\color{seriesMuted}
+THREE-PAPER ARCHITECTURE \hfill \CanonStage\par}
+\vspace{0.42cm}
+{\color{seriesAccent}\rule{\textwidth}{1.05pt}}\par
+\vspace{1.65cm}
+\ifx\CanonGenre\empty
+\else
+{\sffamily\footnotesize\bfseries\color{seriesMuted}\MakeUppercase{\CanonGenre}}\par
+\vspace{0.45cm}\fi
+{\sffamily\bfseries\fontsize{28}{32}\selectfont\color{seriesInk}\hyphenpenalty=10000\exhyphenpenalty=10000\CanonTitle\par}
+\vspace{0.52cm}
+{\sffamily\large\color{seriesAccent}\CanonSubtitle\par}
+\vspace{0.78cm}
+{\color{seriesAccent}\rule{0.24\textwidth}{0.9pt}}\par
+\vspace{0.95cm}
+{\normalsize\sffamily Canon\textsuperscript{*}\;\orcidlink{0009-0001-9037-6209}\par}
+\vspace{0.25cm}
+{\small\sffamily\color{seriesMuted}Independent Researcher\par}
+\vspace{0.16cm}
+{\small\sffamily\color{seriesMuted}\textsuperscript{*}\href{mailto:canon@necessaryuniverse.com}{canon@necessaryuniverse.com}\par}
+\vfill
+\ifx\CanonDeck\empty
+\else
+  \begin{tcolorbox}[
+    enhanced,
+    colback=seriesPaper,
+    colframe=seriesRule,
+    boxrule=0.45pt,
+    leftrule=2.4pt,
+    arc=1.5pt,
+    left=11pt,right=11pt,top=9pt,bottom=9pt,
+    width=0.94\textwidth
+  ]
+  \small\sffamily\color{seriesMuted}
+  \CanonDeck
+  \end{tcolorbox}
+  \vspace{0.65cm}
+\fi
+
+\end{titlepage}
+}
+
+% ---------- Abstract treatment ----------
+\newenvironment{CanonAbstract}{%
+  \begin{center}
+  {\sffamily\footnotesize\bfseries\color{seriesMuted}\MakeUppercase{Abstract}}\\[-0.05em]
+  {\color{seriesAccent}\rule{0.16\textwidth}{0.75pt}}
+  \end{center}
+  \begin{tcolorbox}[
+    enhanced,
+    breakable,
+    colback=white,
+    colframe=seriesRule,
+    boxrule=0.4pt,
+    leftrule=2.2pt,
+    arc=1pt,
+    left=12pt,right=12pt,top=9pt,bottom=9pt,
+    before skip=5pt,after skip=4pt
+  ]
+  \small
+}{%
+  \end{tcolorbox}
+}
+
+% ---------- Bibliography polish ----------
+\newcommand{\CanonBibliographySetup}{%
+  \small
+  \setlength{\parskip}{0.22em}
+  \setlength{\itemsep}{0.55em}
+}
+
+\newcommand{\CanonStage}{DOCUMENT II · WHAT}
+\newcommand{\CanonGenre}{Differential Topology}
+\newcommand{\CanonTitle}{The Klein Block}
+\newcommand{\CanonSubtitle}{Topological Uniqueness of the Non-Orientable $S^3$-Bundle over $S^1$}
+\newcommand{\CanonShortTitle}{The Klein Block}
+\newcommand{\CanonDeck}{A conditional classification theorem in differential topology. All physical postulates are imported from Document I~\cite{CanonWhy} and are not derived herein. Additional ADM and quantum-speed-limit statements are explicitly conditional and are not consequences of the bundle classification alone.}
+
+\begin{document}
+
+\CanonTitlePage
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\begin{CanonAbstract}
+Under five explicitly stated physical postulates imported from the companion ontological paper~\cite{CanonWhy}---concerning a global temporal fibration of a Lorentzian spacetime, compact boundaryless spatial fibers, spatial simple connectivity, time-orientability, and nontrivial vertical orientation monodromy---we prove a conditional classification theorem. The temporal base is $\Sone$, while the spatial fiber is $\Sthree$ by the Poincar\'e--Perelman theorem together with Moise's uniqueness of smooth structures in dimension three. We then classify all smooth $\Sthree$-bundles over $\Sone$: there are exactly two bundle-isomorphism classes, represented by the product bundle and one orientation-reversing mapping torus. Hence the physical non-orientability postulate selects a unique admissible smooth bundle class, denoted the Klein Block~$\Klein$. We further establish geometric and topological consequences of this class: an explicit time-orientable Lorentzian metric with spacelike fibers, a stronger fixed-point theorem for every future-directed timelike flow transverse to the fibers, the obstruction to a globally monotone scalar entropy potential factoring through the temporal base, the integral and mod-2 (co)homology, and the existence---but not uniqueness---of Euclidean $\Pin^+$ and $\Pin^-$ structures on the underlying real tangent bundle. A conditional ADM statement is formulated on the infinite cyclic cover $\Sthree\times\R$, and a conditional Margolus--Levitin estimate is stated only for explicitly modeled isolated quantum subsystems. All dynamical and phenomenological consequences, including any physical selection among Pin structures, are deferred to Document III~\cite{CanonHow}.
+\end{CanonAbstract}
+
+\section*{Architectural Context: The Three-Paper Architecture}
+This paper constitutes the rigorous mathematical core of a three-part research architecture. Its mathematical formulation is self-contained apart from explicitly cited standard results. Its physical motivation is established in Document I; its dynamical consequences are developed in Document III.
+
+\begin{enumerate}
+    \item \textbf{Document I: The Ontological Engine}~\cite{CanonWhy}. Establishes the \textbf{WHY}. Derives five Closure-Admissible physical postulates from the axioms of Identity ($A=A$) and the prohibition of Brute Facts.
+    \item \textbf{Document II: The Topological Engine (This Paper)}. Establishes the \textbf{WHAT}. Accepts the five postulates as hypotheses and executes a mathematical classification, proving that the admissible non-orientable smooth bundle class is unique.
+    \item \textbf{Document III: The Dynamical Engine}~\cite{CanonHow}. Establishes the \textbf{HOW}. Formulates the conditional dynamical framework, fermion descent, and anomaly constraints on this fixed topology.
+\end{enumerate}
+
+\begin{keyresult}
+\textbf{Epistemic Boundary:} The principal theorem is a classification theorem for smooth $S^3$-bundles over $S^1$. The paper also proves several intrinsic geometric and topological consequences. It does not derive the five physical postulates, solve the Einstein field equations, establish thermodynamic laws, select a Pin structure, or establish particle physics.
+\end{keyresult}
+
+\addcontentsline{toc}{section}{Architectural Context: The Three-Paper Architecture}
+
+\newpage
+\phantomsection
+\tableofcontents
+
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\section{Scope and Logical Architecture}
+
+This paper proves a \emph{conditional} classification theorem. The physical postulates are imported from Document I~\cite{CanonWhy} and are not derived herein. We separate mathematical theorems, geometric consistency statements, and additional conditional physical propositions.
+
+\begin{table}[htbp]
+\centering
+\caption{Logical Status and Mathematical Dependencies}
+\label{tab:math}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{4.2cm}}
+\toprule
+\textbf{Claim} & \textbf{Status} & \textbf{Mathematical Dependency} \\
+\midrule
+Compact connected 1-manifold $\cong \Sone$ & Theorem & Classification of compact 1-manifolds \\
+Closed simply connected smooth 3-manifold $\cong \Sthree$ & Theorem & Poincar\'e--Perelman~\cite{perelman,perelmanSurgery,perelmanExtinction} + Moise~\cite{moise} \\
+Complete classification of smooth $\Sthree$-bundles over $\Sone$ & Theorem & Mapping-torus classification + Hatcher~\cite{hatcher} \\
+Unique orientation-reversing bundle class & Corollary & Previous row + nontrivial orientation character \\
+Automatic time-orientability in the spacelike-fiber setting & Theorem & Lorentzian normal line + orientability of $S^1$ \\
+Explicit Lorentzian metric on $\Klein$ & Theorem & Invariant product metric on $\Sthree\times\R$ \\
+CTCs for all transverse future-directed timelike fields & Theorem & Return-map isotopy + Lefschetz fixed-point theorem \\
+No global monotone base-factorized entropy scalar & Theorem & Absolute continuity + FTC \\
+$H_*(\Klein;\Z)$ & Theorem & Wang sequence \\
+$H^*(\Klein;\Ztwo)$ & Theorem & Cohomological Wang sequence + UCT as independent check \\
+$w_1\neq0$, $w_1^2=0$, $w_2=0$ & Theorem & Bundle orientation character + $H^2(\Klein;\Ztwo)=0$ \\
+Euclidean $\Pin^+$ and $\Pin^-$ structures exist & Theorem & Stiefel--Whitney obstruction~\cite{kirby} \\
+Canonical ADM Hamiltonian vanishes weakly on compact boundaryless lifted slices & Conditional & ADM formalism~\cite{wald,adm} \\
+Margolus--Levitin orthogonalization bound & Conditional & Quantum speed limit~\cite{margolus} \\
+\midrule
+Temporal fibration, spatial compactness, simple connectivity, time-orientability, vertical orientation reversal & Physical Postulate & Imported from Doc I~\cite{CanonWhy} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{remark}[Dependency refinement]
+Postulate~\ref{post:timeorient} is retained because it belongs to the imported physical architecture, but it is not independent of the later geometric hypotheses: once a Lorentzian metric with spacelike fibers over the orientable base $\Sone$ exists, time-orientability follows automatically by Theorem~\ref{thm:automatic_timeorientation}. Thus time-orientability is not an additional selector of the smooth bundle class.
+\end{remark}
+
+\section{The Closure-Admissible Postulates}
+
+The following postulates are imported from Document I~\cite{CanonWhy}. They are stated here in the precise language of differential geometry and Lorentzian geometry.
+
+\begin{definition}[Physical Spacetime]
+Let $(\M,g)$ be a connected smooth 4-dimensional manifold equipped with a smooth Lorentzian metric $g$ of signature $(+,-,-,-)$. A choice of one connected component of the timelike cone at every point is called a \emph{time orientation}. A smooth embedded hypersurface $\Sigma\subset\M$ is \emph{spacelike} if the restriction $g|_{T\Sigma}$ is negative definite.
+\end{definition}
+
+\begin{postulate}[Global Temporal Fibration] \label{post:fibration}
+There exists a smooth fiber bundle $\pi: \M \to B$ where:
+\begin{enumerate}
+    \item $B$ is a connected, compact 1-dimensional manifold without boundary.
+    \item Every fiber $\Sigma_t = \pi^{-1}(t)$ is a connected, spacelike 3-manifold.
+\end{enumerate}
+\end{postulate}
+
+\begin{postulate}[Spatial Compactness and Boundarylessness] \label{post:compact}
+Every fiber $\Sigma_t$ is compact and without boundary: $\partial \Sigma_t = \emptyset$.
+\end{postulate}
+
+\begin{postulate}[Spatial Simple Connectivity] \label{post:simple}
+A (hence every) spatial fiber $\Sigma$ is simply connected:
+\[
+\pi_1(\Sigma)=0.
+\]
+\end{postulate}
+
+\begin{postulate}[Time-Orientability] \label{post:timeorient}
+The Lorentzian manifold $(\M,g)$ is time-orientable.
+\end{postulate}
+
+\begin{postulate}[Nontrivial Vertical Orientation Monodromy] \label{post:nonorient}
+The vertical orientation local system of the spacelike fibers has nontrivial monodromy around the base. Equivalently, after identifying $B\cong\Sone$, the monodromy diffeomorphism of a fiber is orientation-reversing. In particular, each individual $\Sthree$ fiber is orientable; what is nontrivial is the transport of its orientation around the temporal loop.
+\end{postulate}
+
+\begin{remark}[Redundancy of time-orientability]
+The explicit time-orientability postulate is logically retained because it is part of the five-postulate physical architecture. Mathematically, however, it is redundant once a Lorentzian metric and a spacelike codimension-one fibration over the orientable base $B\cong\Sone$ are assumed; this is proved after the topological classification.
+\end{remark}
+
+\section{The Topological Uniqueness Chain}
+
+\begin{theorem}[Temporal and Spatial Topology] \label{thm:spatial}
+Under Postulates~\ref{post:fibration}--\ref{post:simple}, the temporal base is $B\cong\Sone$ and the spatial fiber is $\Sigma\cong\Sthree$.
+\end{theorem}
+\begin{proof}
+\textbf{Temporal base.} By Postulate~\ref{post:fibration}, $B$ is a connected, compact 1-manifold without boundary. By the classification of compact connected 1-manifolds, the only such manifold is $\Sone$. Hence $B\cong\Sone$.
+
+\textbf{Spatial fiber.} Since $\dim\M=4$ and $\dim B=1$, every fiber has dimension 3. By Postulates~\ref{post:compact} and~\ref{post:simple}, $\Sigma$ is a closed, simply connected, smooth 3-manifold. Perelman's proof of the Poincar\'e Conjecture implies that $\Sigma$ is homeomorphic to $\Sthree$~\cite{perelman,perelmanSurgery,perelmanExtinction}. By Moise's theorem, 3-manifolds possess essentially unique smooth structures; hence a closed smooth 3-manifold homeomorphic to $\Sthree$ is diffeomorphic to $\Sthree$~\cite{moise}.
+\end{proof}
+
+\begin{lemma}[Smooth Bundles over the Circle are Mapping Tori] \label{lem:mappingtorus}
+Let $F$ be a smooth manifold and let $E\to\Sone$ be a smooth fiber bundle with fiber $F$. After choosing the standard covering $[0,1]\to\Sone$ and a trivialization over $[0,1]$, there is a diffeomorphism $\phi:F\to F$ such that
+\[
+E\cong M_\phi:=\frac{F\times[0,1]}{(x,1)\sim(\phi(x),0)}
+\]
+as smooth bundles over $\Sone$. The bundle-isomorphism class over the identity of the base is determined by the conjugacy class of $[\phi]\in\pi_0\Diff(F)$.
+\end{lemma}
+\begin{proof}
+Pull the bundle back along the universal interval model $[0,1]\to\Sone$. Because $[0,1]$ is contractible, the pulled-back bundle is smoothly trivial. Comparing the trivializations over the two endpoints produces a diffeomorphism $\phi:F\to F$, giving the mapping-torus model. Changing the trivialization changes $\phi$ by conjugation and isotopy, so the corresponding bundle class is determined by the conjugacy class of its component in $\pi_0\Diff(F)$. Conversely, an isotopy of monodromies produces a bundle isomorphism of the mapping tori by the usual parameterized isotopy construction.
+\end{proof}
+
+\begin{theorem}[Complete Classification of Smooth $\Sthree$-Bundles over $\Sone$] \label{thm:complete_bundle}
+Up to smooth bundle isomorphism over the identity on $\Sone$, there are exactly two smooth $\Sthree$-bundles over $\Sone$. They are represented by the mapping tori of an orientation-preserving diffeomorphism and an orientation-reversing diffeomorphism of $\Sthree$, respectively.
+\end{theorem}
+\begin{proof}
+By Lemma~\ref{lem:mappingtorus}, the classification is governed by conjugacy classes in $\pi_0\Diff(\Sthree)$. Hatcher's proof of the Smale Conjecture gives
+\[
+\Diff(\Sthree)\simeq O(4),
+\qquad
+\pi_0\Diff(\Sthree)\cong\pi_0O(4)\cong\Ztwo
+\]
+\cite{hatcher}. The two components are distinguished by the degree:
+\[
+\degfn(\phi)=+1
+\quad\text{or}\quad
+\degfn(\phi)=-1.
+\]
+Since $\Ztwo$ is abelian, its conjugacy classes are its two singleton elements. Hence there are exactly two bundle classes, one for each orientation character.
+\end{proof}
+
+\begin{corollary}[Unique Admissible Orientation-Reversing Bundle Class] \label{cor:physical_unique}
+Under Postulates~\ref{post:fibration}--\ref{post:nonorient}, after choosing a diffeomorphism $B\cong\Sone$, the physical spacetime $(\M,g)$ has a smooth bundle topology uniquely determined up to smooth bundle isomorphism by the orientation-reversing class. It is represented by the Klein Block $\Klein$.
+\end{corollary}
+\begin{proof}
+By Theorem~\ref{thm:spatial}, choose $B\cong\Sone$ and identify a spatial fiber with $\Sthree$. Postulate~\ref{post:nonorient} says that the vertical orientation character around the generator of $\pi_1(\Sone)$ is nontrivial, hence the monodromy has degree $-1$. Theorem~\ref{thm:complete_bundle} then leaves exactly one smooth bundle class.
+\end{proof}
+
+\begin{definition}[The Klein Block] \label{def:klein}
+We call the unique orientation-reversing smooth $\Sthree$-bundle over $\Sone$ the \emph{Klein Block}, denoted $\Klein$. The name is introduced here by analogy with the ordinary Klein bottle, which is the orientation-reversing $S^1$-bundle over $S^1$. Concretely, embed $\Sthree\subset\R^4$ and define the orientation-reversing reflection
+\[
+r:\Sthree\to\Sthree,
+\qquad
+r(x_1,x_2,x_3,x_4)=(-x_1,x_2,x_3,x_4).
+\]
+Then $r$ is an isometry of the round metric $g_{\mathrm{round}}$, satisfies $r^2=\id$, and has $\degfn(r)=-1$. Define
+\begin{equation}
+    \Klein := \frac{\Sthree\times[0,L]}{(x,L)\sim(r(x),0)},
+    \qquad L>0.
+\end{equation}
+The parameter $L$ is a choice of normalization of the base circle and is not a topological invariant. Because every orientation-reversing diffeomorphism of $\Sthree$ lies in the unique orientation-reversing component of $\Diff(\Sthree)$, every such mapping torus is smoothly bundle-isomorphic to this model.
+\end{definition}
+
+\begin{corollary}[Basic Properties of $\Klein$] \label{cor:basic}
+The Klein Block $\Klein$ is:
+\begin{enumerate}
+    \item \textbf{Compact:} $\Klein$ is the quotient of the compact fundamental domain $\Sthree\times[0,L]$ by endpoint identification.
+    \item \textbf{Connected:} $\Sthree\times[0,L]$ is connected and the quotient map is continuous and surjective.
+    \item \textbf{Non-orientable:} the vertical orientation reverses after one circuit of the base, while the base and the fiber are individually orientable.
+    \item \textbf{Fundamental group:} $\pi_1(\Klein)\cong\mathbb Z$, because the long exact sequence of the fibration gives
+    \[
+    1\to\pi_1(\Sthree)\to\pi_1(\Klein)\to\pi_1(\Sone)\to1
+    \]
+    and $\pi_1(\Sthree)=0$.
+    \item \textbf{Universal cover:} $\widetilde{\Klein}\cong\Sthree\times\R$, with deck generator
+    \[
+    F(x,t)=(r(x),t+L).
+    \]
+    \item \textbf{Orientable double cover:} the index-two subgroup generated by $F^2$ gives
+    \[
+    \Klein^{\mathrm{or}}\cong \frac{\Sthree\times\R}{\langle F^2\rangle}
+    \cong \Sthree\times(\R/2L\Z)\cong\Sthree\times\Sone.
+    \]
+\end{enumerate}
+\end{corollary}
+
+\section{Metric Existence and Causal Structure}
+
+\begin{theorem}[Existence of a Time-Orientable Lorentzian Metric] \label{thm:metric}
+The Klein Block $\Klein$ admits a smooth Lorentzian metric $g$ of signature $(+,-,-,-)$ such that the spatial $\Sthree$ fibers are everywhere spacelike and the spacetime is time-orientable.
+\end{theorem}
+\begin{proof}
+On the universal cover $\widetilde{\Klein}=\Sthree\times\R$, define
+\begin{equation}
+    \tilde g=dt^2-g_{\mathrm{round}}.
+\end{equation}
+The deck transformation $F(x,t)=(r(x),t+L)$ is an isometry of $\tilde g$ because $r$ is an isometry of $g_{\mathrm{round}}$. The action is free and properly discontinuous because it translates the $\R$ coordinate by $L>0$. Hence $\tilde g$ descends to a smooth Lorentzian metric on $\Klein$. Moreover,
+\[
+F_*(\partial_t)=\partial_t,
+\]
+so the timelike vector field $\partial_t$ descends to a global nowhere-vanishing timelike vector field on $\Klein$. This proves time-orientability, while the restriction of $g$ to each $\Sthree$ fiber is $-g_{\mathrm{round}}$, hence negative definite.
+\end{proof}
+
+\begin{theorem}[Automatic Time-Orientability in the Spacelike-Fiber Setting] \label{thm:automatic_timeorientation}
+Let $(M,g)$ be a Lorentzian 4-manifold carrying a smooth fiber bundle $\pi:M\to\Sone$ whose fibers are spacelike 3-manifolds. Then $(M,g)$ is time-orientable.
+\end{theorem}
+\begin{proof}
+Choose a nowhere-vanishing 1-form $\alpha$ on the oriented circle $\Sone$. At each $x\in M$, the vertical tangent space $V_x=\ker d\pi_x$ is spacelike of codimension one. Its $g$-orthogonal complement $V_x^{\perp}$ is therefore a one-dimensional timelike subspace. The pullback $\beta=\pi^*\alpha$ annihilates $V_x$, so its metric dual $\beta^\sharp$ lies in $V_x^{\perp}$. Since $\alpha$ is nowhere zero and $d\pi$ is surjective, $\beta$ is nowhere zero. Consequently $\beta^\sharp$ is a smooth nowhere-vanishing timelike vector field, which is a time orientation.
+\end{proof}
+
+\begin{definition}[Lorentzian Causality vs. Topological Foliation] \label{def:causality}
+We distinguish two notions of ordering on $\Klein$:
+\begin{enumerate}
+    \item \textbf{Lorentzian causal relation:} the relation induced by the light cones of $g$. This fails to be a partial order because antisymmetry fails whenever closed timelike curves are present.
+    \item \textbf{Topological foliation parameter:} the projection $\pi:\Klein\to\Sone$ defines a circle-valued parameter. After choosing an orientation of $\Sone$, it supplies a cyclic ordering of the fibers, but it does not define a global real-valued time function $t:\Klein\to\R$.
+\end{enumerate}
+The topological foliation parameter is therefore distinct from any Lorentzian causal time function and should not be interpreted as a real-valued temporal coordinate.
+\end{definition}
+
+\begin{remark}[Compactness Already Forces Some CTC]
+Every compact Lorentzian manifold contains a closed timelike curve; a proof is given, for example, in standard Lorentzian-causality treatments~\cite{minguzzi}. Thus compactness alone already gives existence of some CTC on $\Klein$. The theorem below is stronger: it ties a closed orbit to \emph{every} smooth future-directed timelike vector field transverse to the $\Sthree$ fibers, using the orientation-reversing monodromy.
+\end{remark}
+
+\begin{lemma}[Transverse-Flow Holonomy] \label{lem:holonomy}
+Fix an orientation of the base $\Sone$ and a nowhere-vanishing positive 1-form $\alpha$ on $\Sone$. Let $X$ be a smooth vector field on $\Klein$ satisfying
+\[
+\alpha(d\pi(X))\ge c>0.
+\]
+Then the one-winding return map on the reference fiber $\Sthree$ is a smooth diffeomorphism isotopic to the orientation-reversing monodromy $r$.
+\end{lemma}
+\begin{proof}
+Lift $X$ to the universal cover $\Sthree\times\R$ to obtain a deck-invariant vector field $\widetilde X$. Writing $\alpha=d\theta$ in the lifted oriented coordinate, the hypothesis gives $d\theta(\widetilde X)\ge c>0$. Hence the lifted flow strictly increases the $\R$ coordinate. For any $\tilde x\in\Sthree\times\{0\}$, the first time $\tau_{\tilde x}$ at which the flow reaches $\Sthree\times\{L\}$ exists and satisfies
+\[
+\tau_{\tilde x}\le L/c.
+\]
+Smooth dependence of the hitting time follows from the implicit function theorem because the crossing is transverse. Applying $F^{-1}(y,L)=(r(y),0)$ to the endpoint gives a smooth return map $P:\Sthree\to\Sthree$.
+
+To construct an isotopy to $r$, consider
+\[
+X_s=(1-s)X+sX_0,
+\qquad
+X_0:=\text{the descended field induced by }\partial_t.
+\]
+Each $X_s$ is smooth and satisfies
+\[
+\alpha(d\pi(X_s))\ge (1-s)c+s>0.
+\]
+Thus the corresponding return maps $P_s$ vary smoothly with $s$. At $s=1$, the lifted flow is $\partial_t$, whose one-winding return map is exactly $r$. Hence $P=P_0$ is isotopic to $r$.
+\end{proof}
+
+\begin{theorem}[Closed Timelike Orbits for Transverse Fields] \label{thm:ctc}
+Let $(\Klein,g)$ be equipped with any time-orientable Lorentzian metric such that the spatial $\Sthree$ fibers are spacelike. Then every smooth future-directed timelike vector field $T$ on $\Klein$ has at least one closed orbit.
+\end{theorem}
+\begin{proof}
+Choose an orientation of the base $\Sone$ and a nowhere-vanishing positive 1-form $\alpha$ on $\Sone$. At every point, the tangent space to a spacelike fiber is a negative-definite 3-plane; hence a timelike vector cannot lie in the fiber tangent space. Therefore
+\[
+d\pi(T)\neq0.
+\]
+The scalar function $\alpha(d\pi(T))$ is continuous and nowhere zero on connected $\Klein$, so its sign is constant. Reverse the chosen base orientation if necessary to arrange
+\[
+\alpha(d\pi(T))>0.
+\]
+Since $\Klein$ is compact, there is a constant $c>0$ such that
+\[
+\alpha(d\pi(T))\ge c.
+\]
+
+Lift $T$ to a deck-invariant vector field $\widetilde T$ on $\Sthree\times\R$. By Lemma~\ref{lem:holonomy}, the one-winding return map $P:\Sthree\to\Sthree$ is isotopic to $r$. Therefore
+\[
+\degfn(P)=\degfn(r)=-1.
+\]
+The Lefschetz number is
+\begin{equation}
+L(P)=\Tr(P_*|_{H_0})+(-1)^3\Tr(P_*|_{H_3})
+=1-(-1)=2\neq0.
+\end{equation}
+By the Lefschetz Fixed-Point Theorem, $P$ has a fixed point $x_0\in\Sthree$. The timelike integral curve through the corresponding point of the fiber closes after one winding of the base, producing a closed timelike curve.
+\end{proof}
+
+\begin{corollary}[No Global Real-Valued Time Function] \label{cor:notimefunction}
+No smooth function $t:\Klein\to\R$ can be strictly increasing along every future-directed timelike curve. In particular, $\Klein$ admits no global time function in the usual causality-theoretic sense.
+\end{corollary}
+\begin{proof}
+A closed timelike curve returns to its initial point. A strictly increasing real-valued time function would have to satisfy $t(p)<t(p)$ after traversing that curve, which is impossible.
+\end{proof}
+
+\begin{remark}[Explicit CTCs for the Model Metric]
+For the product metric $\tilde g=dt^2-g_{\mathrm{round}}$ constructed in Theorem~\ref{thm:metric}, the vector field $\partial_t$ is timelike. Its integral curves are $t\mapsto(x,t)$. If $x$ is fixed by $r$, the curve closes in the quotient. The fixed-point set of
+\[
+r(x_1,x_2,x_3,x_4)=(-x_1,x_2,x_3,x_4)
+\]
+is the equator $x_1=0$, which is an $S^2$. Thus the explicit model contains an $S^2$-family of CTCs. This stronger family statement is model-specific and is not asserted for every compatible Lorentzian metric.
+\end{remark}
+
+\subsection{The Entropy No-Go Theorem}
+
+We establish a topological obstruction to the existence of a global scalar entropy potential that is monotonically non-decreasing around the temporal circle.
+
+\begin{theorem}[Entropy No-Go on $\Sone$] \label{thm:entropy_nogo}
+Let $s:\Sone\to\R$ be a non-constant, single-valued, absolutely continuous function. There exists no continuous, nowhere-vanishing vector field $V$ on $\Sone$ such that the almost-everywhere derivative $ds(V)$ is nonnegative and is strictly positive on a set of positive Lebesgue measure.
+\end{theorem}
+\begin{proof}
+Parametrize $\Sone=\R/L\Z$ by $\theta\in[0,L)$. Any continuous nowhere-vanishing vector field on $\Sone$ has the form
+\[
+V=g(\theta)\,\partial_\theta,
+\]
+where $g$ is continuous and nowhere zero. Since $\Sone$ is connected, $g$ has constant sign.
+
+\textbf{Case 1: $g>0$.} The condition $ds(V)\ge0$ a.e. becomes $s'(\theta)\ge0$ a.e. Absolute continuity and single-valuedness give
+\[
+\int_0^L s'(\theta)\,d\theta=s(L)-s(0)=0.
+\]
+If $ds(V)>0$ on a set of positive measure, then $s'>0$ on a set of positive measure. Since $s'\ge0$ a.e., the integral would be strictly positive, a contradiction.
+
+\textbf{Case 2: $g<0$.} Then $ds(V)\ge0$ a.e. implies $s'(\theta)\le0$ a.e. Again
+\[
+\int_0^L s'(\theta)\,d\theta=0.
+\]
+Strict positivity of $ds(V)=g\,s'$ on a set of positive measure forces $s'<0$ on a set of positive measure, which makes the integral strictly negative, again a contradiction.
+\end{proof}
+
+\begin{remark}[Interpretation]
+Theorem~\ref{thm:entropy_nogo} is specifically a theorem about a real-valued scalar that factors through the temporal base. It does not rule out arbitrary scalar fields $S:\Klein\to\R$ whose values vary within a spatial fiber, nor does it prove that a particular physical entropy current exists. It shows that a nonconstant, single-valued scalar potential on the temporal circle cannot be globally monotone around the entire cycle.
+\end{remark}
+
+\begin{proposition}[Conditional: 1-Form Entropy Model] \label{prop:1form}
+\emph{(Conditional Physical Proposition.)} If a thermodynamic arrow is modeled by a single-valued scalar potential that factors through the temporal base, $S=s\circ\pi$ for $s:\Sone\to\R$, then Theorem~\ref{thm:entropy_nogo} excludes a globally monotone nonconstant $S$. A closed non-exact 1-form on the base provides one mathematically natural way to encode cyclic temporal orientation.
+\end{proposition}
+\begin{proof}
+This is a modeling observation. Let $\alpha$ be a closed 1-form on $\Sone$ with
+\[
+\int_{\Sone}\alpha\neq0.
+\]
+Because $\pi_*:\pi_1(\Klein)\to\pi_1(\Sone)$ is surjective, there exists a loop $\gamma$ in $\Klein$ projecting once around the base. Then
+\[
+\int_\gamma\pi^*\alpha=\int_{\Sone}\alpha\neq0,
+\]
+so $\pi^*\alpha$ is closed but not exact. Whether a physical entropy current should be represented by such a form is a question for Document III.
+\end{proof}
+
+\section{Canonical Hamiltonian on Compact Boundaryless Slices}
+
+The following statement is deliberately separated from the topological classification. Because $\Klein$ is not globally hyperbolic, the canonical analysis is performed on the infinite cyclic cover $\Sthree\times\R$, whose $\Sthree$ leaves are compact and boundaryless. It is not an assertion that the quotient admits a global Cauchy problem.
+
+\begin{proposition}[Conditional: Vanishing Canonical Hamiltonian on the Lifted Constraint Surface] \label{prop:hamiltonian}
+\emph{(Conditional Physical Proposition.)} Consider the Einstein--Hilbert action, optionally coupled to a diffeomorphism-invariant matter sector admitting the standard ADM decomposition, on the lifted spacetime $\Sthree\times\R$. Let $\Sigma\cong\Sthree$ be a compact boundaryless leaf. After the standard ADM Legendre transform, the canonical Hamiltonian has the form
+\begin{equation}
+H[N,N^i]=\int_\Sigma\left(N\mathcal H_\perp+N^i\mathcal H_i\right)d^3x,
+\end{equation}
+with no residual spatial boundary contribution. On the constraint surface
+\[
+\mathcal C:=\left\{\mathcal H_\perp=0,\;\mathcal H_i=0\right\},
+\]
+one has
+\[
+H[N,N^i]\approx0,
+\]
+where $\approx$ denotes equality after restriction to the constraint surface. With matter included,
+\begin{align}
+\mathcal H_\perp^{\mathrm{grav}}+\mathcal H_\perp^{\mathrm{matter}}&=0,\\
+\mathcal H_i^{\mathrm{grav}}+\mathcal H_i^{\mathrm{matter}}&=0.
+\end{align}
+\end{proposition}
+\begin{proof}
+The ADM Legendre transform produces lapse and shift as Lagrange multipliers for the Hamiltonian and momentum constraints. On a spatially compact manifold without boundary, integrations by parts generate no boundary contribution. Consequently the canonical Hamiltonian is a linear combination of the constraints. Restricting to the constraint surface $\mathcal C$ gives $H[N,N^i]\approx0$~\cite{wald,adm}.
+\end{proof}
+
+\begin{remark}[Non-Cauchy Slices and Terminological Caution]
+The $\Sthree$ leaves of $\Klein$ are not Cauchy hypersurfaces because the quotient contains closed timelike curves. The ADM decomposition used above therefore belongs to the lifted foliated spacetime $\Sthree\times\R$, not to a globally hyperbolic initial-value formulation on $\Klein$. Moreover,
+\[
+H_{\mathrm{canonical}}\approx0
+\]
+is not a statement that an ADM energy of a compact universe has been computed and found to vanish. The standard ADM energy is an asymptotic quantity associated with suitable noncompact spatial infinity, whereas the present statement concerns the constrained canonical Hamiltonian on a compact slice~\cite{wald,adm}.
+\end{remark}
+
+\section{Spin and Pin Structures on the Klein Block}
+
+\subsection{Integral Homology via the Wang Sequence}
+
+\begin{theorem}[Integral Homology of $\Klein$] \label{thm:homology}
+The integral homology groups of the Klein Block are:
+\begin{align}
+    H_0(\Klein;\Z)&\cong\Z, \nonumber \\
+    H_1(\Klein;\Z)&\cong\Z, \nonumber \\
+    H_2(\Klein;\Z)&=0, \nonumber \\
+    H_3(\Klein;\Z)&\cong\Ztwo, \nonumber \\
+    H_4(\Klein;\Z)&=0.
+\end{align}
+\end{theorem}
+\begin{proof}
+The Wang sequence for the mapping torus with monodromy $r$ is
+\begin{equation}
+    \cdots\to H_q(\Sthree)
+    \xrightarrow{\id-r_*}
+    H_q(\Sthree)
+    \to H_q(\Klein)
+    \to H_{q-1}(\Sthree)
+    \xrightarrow{\id-r_*}
+    H_{q-1}(\Sthree)\to\cdots.
+\end{equation}
+The homology of $\Sthree$ is $H_0(\Sthree)=\Z$, $H_3(\Sthree)=\Z$, and zero otherwise. The reflection $r$ acts as $+\id$ on $H_0$ and as $-\id$ on $H_3$.
+
+For the top groups,
+\[
+0\to H_4(\Klein)\to\Z\xrightarrow{\times2}\Z\to H_3(\Klein)\to0,
+\]
+so
+\[
+H_4(\Klein)=0,
+\qquad
+H_3(\Klein)\cong\Z/2\Z.
+\]
+For the lower groups,
+\[
+0\to H_2(\Klein)\to0
+\]
+forces $H_2(\Klein)=0$, while
+\[
+0\to H_1(\Klein)\to\Z\xrightarrow{0}\Z\to H_0(\Klein)\to0
+\]
+gives
+\[
+H_1(\Klein)\cong\Z,
+\qquad
+H_0(\Klein)\cong\Z.
+\]
+The vanishing of $H_4(\Klein;\Z)$ is also consistent with non-orientability of the closed connected 4-manifold.
+\end{proof}
+
+\subsection{Mod-2 Cohomology and Characteristic Classes}
+
+\begin{theorem}[Mod-2 Cohomology of $\Klein$] \label{thm:mod2}
+The mod-2 cohomology groups of the Klein Block are
+\begin{equation}
+    H^0(\Klein;\Ztwo)\cong\Ztwo,\quad
+    H^1(\Klein;\Ztwo)\cong\Ztwo,\quad
+    H^2(\Klein;\Ztwo)=0,\quad
+    H^3(\Klein;\Ztwo)\cong\Ztwo,\quad
+    H^4(\Klein;\Ztwo)\cong\Ztwo.
+\end{equation}
+\end{theorem}
+\begin{proof}
+In mod-2 coefficients, the orientation-reversing monodromy acts trivially on $H^q(\Sthree;\Ztwo)$ because $-1\equiv+1\pmod2$. Hence
+\[
+\id-r^*=0
+\]
+on every nonzero cohomology group of the fiber. The cohomological Wang sequence therefore gives
+\[
+H^0(\Klein;\Ztwo)\cong\Ztwo,
+\qquad
+H^1(\Klein;\Ztwo)\cong\Ztwo,
+\qquad
+H^2(\Klein;\Ztwo)=0.
+\]
+For the top degrees, exactness gives
+\[
+0\to H^3(\Klein;\Ztwo)\to\Ztwo\xrightarrow{0}\Ztwo\to H^4(\Klein;\Ztwo)\to0,
+\]
+so directly
+\[
+H^3(\Klein;\Ztwo)\cong\Ztwo,
+\qquad
+H^4(\Klein;\Ztwo)\cong\Ztwo.
+\]
+As an independent check, the Universal Coefficient Theorem gives
+\[
+0\to \Ext(H_2(\Klein;\Z),\Ztwo)
+\to H^3(\Klein;\Ztwo)
+\to \Hom(H_3(\Klein;\Z),\Ztwo)
+\to0,
+\]
+and since $H_2=0$ and $H_3\cong\Ztwo$, one obtains
+\[
+H^3(\Klein;\Ztwo)\cong\Hom(\Ztwo,\Ztwo)\cong\Ztwo.
+\]
+The contrast
+\[
+H_4(\Klein;\Z)=0,
+\qquad
+H^4(\Klein;\Ztwo)\cong\Ztwo
+\]
+is the expected distinction between integral orientation and the mod-2 fundamental class.
+\end{proof}
+
+\begin{corollary}[Vertical Orientation Class and Stiefel--Whitney Classes] \label{cor:SW}
+Let $u\in H^1(\Sone;\Ztwo)$ denote the nonzero generator. Then
+\begin{equation}
+    w_1(T\Klein)=\pi^*u\neq0,
+    \qquad
+    w_1(T\Klein)^2=0,
+    \qquad
+    w_2(T\Klein)=0.
+\end{equation}
+\end{corollary}
+\begin{proof}
+Choose a splitting
+\[
+T\Klein\cong T_{\mathrm{vert}}\Klein\oplus\pi^*T\Sone.
+\]
+Since $\Sone$ is orientable,
+\[
+ w_1(T\Klein)=w_1(T_{\mathrm{vert}}\Klein).
+\]
+The latter is precisely the first Stiefel--Whitney class of the vertical orientation local system, so by Postulate~\ref{post:nonorient} it is $\pi^*u\neq0$. Since $H^2(\Klein;\Ztwo)=0$ by Theorem~\ref{thm:mod2}, every degree-two mod-2 class vanishes. In particular,
+\[
+w_1^2=0,
+\qquad
+w_2=0.
+\]
+\end{proof}
+
+\subsection{Existence and Multiplicity of Euclidean Pin Structures}
+
+\begin{theorem}[Existence of Euclidean Pin Structures] \label{thm:pin}
+The underlying real tangent bundle of $\Klein$ admits no $\Spin$ structure, but it admits both Euclidean $\Pin^+$ and Euclidean $\Pin^-$ structures.
+\end{theorem}
+\begin{proof}
+A $\Spin$ structure requires $w_1=0$ and $w_2=0$. Since $w_1(T\Klein)\neq0$, no $\Spin$ structure exists. The obstruction classes for Euclidean $\Pin^+$ and $\Pin^-$ structures are respectively
+\[
+ w_2
+ \qquad\text{and}\qquad
+ w_2+w_1^2.
+\]
+By Corollary~\ref{cor:SW}, both vanish. Hence both $\Pin^+$ and $\Pin^-$ structures exist~\cite{kirby}.
+\end{proof}
+
+\begin{corollary}[Non-Uniqueness of Pin Structures] \label{cor:pinmultiplicity}
+There are exactly two equivalence classes of Euclidean $\Pin^+$ structures and exactly two equivalence classes of Euclidean $\Pin^-$ structures on $T\Klein$.
+\end{corollary}
+\begin{proof}
+Whenever a $\Pin^\pm$ structure exists, the set of equivalence classes of such structures is a torsor for $H^1(\Klein;\Ztwo)$. By Theorem~\ref{thm:mod2},
+\[
+H^1(\Klein;\Ztwo)\cong\Ztwo,
+\]
+so each of the two Pin types has exactly two equivalence classes.
+\end{proof}
+
+\begin{remark}[Euclidean vs. Lorentzian Pin Structures]
+Theorem~\ref{thm:pin} and Corollary~\ref{cor:pinmultiplicity} concern Euclidean $\Pin^\pm$ structures on the underlying real tangent bundle. They establish topological existence and multiplicity, not a physical choice of Pin convention. The Lorentzian Clifford signature, the continuation prescription, and the anomaly-bordism convention used in Document III~\cite{CanonHow} are separate inputs.
+\end{remark}
+
+\section{The Margolus--Levitin Bound: A Conditional Estimate}
+
+\begin{proposition}[Conditional: Bound on Successive Orthogonalizations] \label{prop:capacity}
+\emph{(Conditional Physical Proposition.)} Suppose the Read-Head is modeled as an isolated quantum subsystem with Hilbert space $\mathcal H_{\mathrm{RH}}$, evolving unitarily under a time-independent self-adjoint Hamiltonian $H_{\mathrm{RH}}$ that is bounded below and has ground energy $E_0$. Let the normalized initial state have finite expectation value and define
+\[
+E_{\mathrm{RH}}:=\langle H_{\mathrm{RH}}\rangle-E_0>0.
+\]
+Assume the same Hamiltonian governs the subsystem throughout an interval of proper duration $\tau_{\mathrm{cycle}}$. If $N_{\mathrm{RH}}$ successive transitions are each required to reach a state orthogonal to the immediately preceding state, then
+\begin{equation}
+    N_{\mathrm{RH}}
+    \leq
+    \left\lfloor
+    \frac{2E_{\mathrm{RH}}\tau_{\mathrm{cycle}}}{\pi\hbar}
+    \right\rfloor
+    <\infty
+\end{equation}
+by the Margolus--Levitin quantum speed limit~\cite{margolus}.
+\end{proposition}
+\begin{proof}
+For a time-independent Hamiltonian, the expectation value of $H_{\mathrm{RH}}-E_0$ is constant during the unitary evolution. The Margolus--Levitin orthogonalization bound gives a lower bound
+\[
+\tau_\perp\ge\frac{\pi\hbar}{2E_{\mathrm{RH}}}
+\]
+for each orthogonalization. Summing over $N_{\mathrm{RH}}$ successive orthogonalization intervals yields
+\[
+N_{\mathrm{RH}}\frac{\pi\hbar}{2E_{\mathrm{RH}}}
+\leq\tau_{\mathrm{cycle}},
+\]
+which gives the stated integer bound.
+\end{proof}
+
+\begin{remark}[Conditions and Scope]
+The bound concerns successive \emph{orthogonalizations} of an isolated subsystem. It is not a universal theorem about logical operations, semantic distinctions, or arbitrary notions of distinguishable ``actualization.'' Moreover, the parameter $L$ in Definition~\ref{def:klein} is only a base-circle normalization. It becomes a physical proper duration $\tau_{\mathrm{cycle}}$ only after a metric and a specific closed timelike trajectory have been chosen. The dynamical specification of such a subsystem is deferred to Document III.
+\end{remark}
+
+\begin{principle}[Energy Separation Convention] \label{principle:energy}
+The Margolus--Levitin bound depends on the positive excitation energy $E_{\mathrm{RH}}>0$ of the modeled Read-Head subsystem. The gravitational canonical constraint
+\[
+H_{\mathrm{canonical}}\approx0
+\]
+from Proposition~\ref{prop:hamiltonian} must not be substituted into the Margolus--Levitin formula. These quantities have different meanings: the first is a gauge constraint on the generally covariant total system, while the second is the energy expectation of an explicitly modeled isolated quantum subsystem.
+\end{principle}
+
+\section{Effects of Relaxing the Admissibility Conditions}
+
+This section records what changes if selected assumptions are relaxed. It is mathematical sensitivity analysis, not a physical derivation of the original postulates.
+
+\begin{itemize}
+    \item \textbf{Relaxing global temporal fibration (Postulate~\ref{post:fibration}):} The spacetime need no longer fiber smoothly over a compact 1-manifold. Without a global bundle map to a circle, neither the mapping-torus classification nor the one-winding return-map argument is available in the present form.
+    \item \textbf{Relaxing temporal compact closure within Postulate~\ref{post:fibration}:} The base may become noncompact, for example $B=\R$. Then the circle-valued temporal parameter and the associated periodicity obstruction disappear.
+    \item \textbf{Relaxing spatial compactness (Postulate~\ref{post:compact}):} Noncompact fibers such as $\R^3$ or other open contractible 3-manifolds become admissible. The Poincar\'e--Perelman theorem no longer constrains the fiber to be $\Sthree$.
+    \item \textbf{Relaxing simple connectivity (Postulate~\ref{post:simple}):} Fibers with nontrivial $\pi_1$ become admissible. Examples include $T^3$ and lens spaces. The Poincar\'e--Perelman theorem would no longer force $\Sigma\cong\Sthree$.
+    \item \textbf{Relaxing vertical orientation reversal (Postulate~\ref{post:nonorient}):} Both classes in Theorem~\ref{thm:complete_bundle} become admissible: the product bundle $\Sthree\times\Sone$ and the twisted Klein Block.
+    \item \textbf{Dropping time-orientability as a separate postulate (Postulate~\ref{post:timeorient}):} Under the remaining Lorentzian spacelike-fiber assumptions with base $\Sone$, the smooth bundle classification is unchanged because time-orientability is automatic by Theorem~\ref{thm:automatic_timeorientation}. Thus this relaxation does not enlarge the admissible smooth bundle class.
+\end{itemize}
+
+\begin{remark}[Philosophical Motivation]
+The physical reasons for adopting the postulates---finite actualization, topological minimality, elimination of arbitrary handedness, and related principles---are established in Document I~\cite{CanonWhy}. They are philosophical motivations, not mathematical hypotheses. This paper treats the postulates as given and derives their mathematical consequences.
+\end{remark}
+
+\section{Conclusion}
+
+Under the five Closure-Admissible postulates imported from Document I, the following mathematical statements have been established.
+
+\begin{enumerate}
+    \item The temporal base is $\Sone$ and the spatial fiber is $\Sthree$ (Theorem~\ref{thm:spatial}).
+    \item There are exactly two smooth $\Sthree$-bundle classes over $\Sone$; exactly one is orientation-reversing (Theorem~\ref{thm:complete_bundle}).
+    \item The non-orientability postulate therefore selects a unique admissible smooth bundle class, represented by the Klein Block $\Klein$ (Corollary~\ref{cor:physical_unique}).
+    \item $\Klein$ is compact, connected, non-orientable, has $\pi_1(\Klein)\cong\Z$, universal cover $\Sthree\times\R$, and orientable double cover $\Sthree\times\Sone$ (Corollary~\ref{cor:basic}).
+    \item $\Klein$ admits an explicit time-orientable Lorentzian metric with spacelike $\Sthree$ fibers (Theorem~\ref{thm:metric}); more generally, time-orientability is automatic for any Lorentzian spacelike-fiber bundle over $\Sone$ (Theorem~\ref{thm:automatic_timeorientation}).
+    \item Every smooth future-directed timelike vector field on $\Klein$ has a closed orbit when the $\Sthree$ fibers are spacelike (Theorem~\ref{thm:ctc}).
+    \item No nonconstant absolutely continuous scalar $s:\Sone\to\R$ can be globally monotone along a continuous nowhere-vanishing vector field on the base (Theorem~\ref{thm:entropy_nogo}).
+    \item The integral homology is
+    \[
+    H_*(\Klein;\Z)\cong(\Z,\Z,0,\Ztwo,0),
+    \]
+    in degrees $0$ through $4$ (Theorem~\ref{thm:homology}).
+    \item The mod-2 cohomology is
+    \[
+    H^*(\Klein;\Ztwo)\cong(\Ztwo,\Ztwo,0,\Ztwo,\Ztwo),
+    \]
+    in degrees $0$ through $4$ (Theorem~\ref{thm:mod2}).
+    \item The characteristic classes satisfy
+    \[
+    w_1(T\Klein)\neq0,
+    \qquad
+    w_1(T\Klein)^2=0,
+    \qquad
+    w_2(T\Klein)=0
+    \]
+    (Corollary~\ref{cor:SW}).
+    \item The underlying real tangent bundle admits both Euclidean $\Pin^+$ and Euclidean $\Pin^-$ structures, but no $\Spin$ structure; moreover, each Pin type has two equivalence classes (Theorem~\ref{thm:pin}, Corollary~\ref{cor:pinmultiplicity}).
+\end{enumerate}
+
+The principal classification result is therefore
+\[
+\boxed{
+\text{physical postulates}
+\;\Longrightarrow\;
+B\cong\Sone,
+\quad
+\Sigma\cong\Sthree,
+\quad
+\M\cong_{\mathrm{bundle}}\Klein.
+}
+\]
+The uniqueness established here concerns the \emph{smooth bundle topology}. It does not imply uniqueness of Lorentzian metric, proper-time scale, Pin structure, matter content, quantum state, or dynamics.
+
+The ADM statement and Margolus--Levitin estimate are additional conditional propositions, not consequences of bundle classification alone. The dynamical and phenomenological consequences of this topology are addressed in Document III~\cite{CanonHow}; this paper makes no claim to establish them.
+
+\bigskip
+\begin{excludedclaims}
+This paper explicitly does not claim:
+\begin{enumerate}
+\item to derive the five Closure-Admissible postulates (they are imported from Document I);
+\item to prove that the physical universe actually realizes the Klein Block;
+\item to determine a unique Lorentzian metric or proper-time scale on the Klein Block;
+\item to solve the Einstein field equations or any matter-field dynamics (deferred to Document III);
+\item to select a unique $\Pin^+$ or $\Pin^-$ structure or a physical Lorentzian Pin convention (deferred to Document III);
+\item to resolve the Tolman entropy problem or construct a physical global thermodynamic arrow;
+\item to construct the quantum state on the chronology-violating quotient.
+\end{enumerate}
+\end{excludedclaims}
+
+\newpage
+\appendix
+\section{Mathematical Proof Dependency Ledger}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.32\textwidth} >{\raggedright\arraybackslash}p{0.18\textwidth} >{\raggedright\arraybackslash}p{0.40\textwidth}}
+\toprule
+\textbf{Statement} & \textbf{Status} & \textbf{Mathematical Dependency} \\
+\midrule
+$B\cong\Sone$ & Theorem & Classification of compact connected 1-manifolds \\
+$\Sigma\cong\Sthree$ & Theorem & Poincar\'e--Perelman~\cite{perelman,perelmanSurgery,perelmanExtinction} + Moise~\cite{moise} \\
+Smooth $\Sthree$-bundles over $\Sone$: exactly two classes & Theorem & Mapping-torus lemma + $\Diff(\Sthree)\simeq O(4)$~\cite{hatcher} \\
+Unique orientation-reversing class & Corollary & Nontrivial degree character + previous row \\
+$\pi_1(\Klein)\cong\Z$ & Theorem & Long exact sequence of fibration \\
+$\Klein$ compact and connected & Theorem & Compact quotient / connected quotient \\
+Orientable double cover $\cong\Sthree\times\Sone$ & Theorem & $F^2(x,t)=(x,t+2L)$ \\
+Lorentzian metric exists & Theorem & Invariant product metric on $\Sthree\times\R$ \\
+Time-orientability automatic under spacelike-fiber hypotheses & Theorem & Timelike normal line is trivial over $\Sone$ \\
+CTCs for every transverse timelike field & Theorem & Return-map isotopy + Lefschetz theorem \\
+No global real-valued temporal function & Corollary & Existence of CTC \\
+Entropy No-Go & Theorem & Absolute continuity + FTC \\
+$H_3(\Klein;\Z)\cong\Ztwo$ & Theorem & Wang sequence \\
+$H^2(\Klein;\Ztwo)=0$ & Theorem & Mod-2 Wang sequence \\
+$w_1=\pi^*u$, $w_1^2=0$, $w_2=0$ & Theorem & Bundle orientation character + mod-2 cohomology \\
+Euclidean $\Pin^\pm$ exist & Theorem & Pin obstruction classes~\cite{kirby} \\
+Two Euclidean $\Pin^+$ and two $\Pin^-$ classes & Corollary & $H^1(\Klein;\Ztwo)\cong\Ztwo$ torsor action \\
+$H_{\mathrm{canonical}}\approx0$ & Conditional & ADM on lifted compact boundaryless slices~\cite{wald,adm} \\
+Orthogonalization bound & Conditional & Margolus--Levitin~\cite{margolus} \\
+\bottomrule
+\end{longtable}
+
+\section{Philosophical Motivation (Imported from Document I)}
+
+The five Closure-Admissible postulates are motivated in Document I~\cite{CanonWhy}. Their role in this paper is purely axiomatic: they are hypotheses, not derived mathematical consequences.
+
+\begin{itemize}
+    \item \textbf{Temporal fibration and spatial compactness:} motivated by the requirement of finite actualization.
+    \item \textbf{Simple connectivity:} motivated by topological minimality and the prohibition of ungrounded holonomy.
+    \item \textbf{Time-orientability:} retained as a physical architectural requirement, although mathematically redundant under the later Lorentzian spacelike-fiber hypotheses.
+    \item \textbf{Nontrivial vertical orientation monodromy:} motivated by the elimination of arbitrary global handedness.
+\end{itemize}
+
+These are philosophical motivations, not mathematical proofs. The classification theorem begins only after they are accepted as postulates.
+
+\newpage
+\section*{Acknowledgments}
+This research was conducted entirely independently, without institutional affiliation or external support. The scope of the Three-Paper Architecture spans the deepest foundations of human inquiry---from the ontology of consciousness and the axiomatic prohibition of brute facts, to the differential topology of the Klein Block, to the quantum field theory of anomaly constraints. 
+
+Because this program demands absolute rigor across such a vast, interdisciplinary landscape, the author used AI language models as computational co-auditors and structural stress-testers. The AI assisted in symbolic verification, mathematical calculations, and document preparation at every stage of the development.
+
+However, the core concepts, the axiomatic foundation, and the architectural vision are entirely the author's own. Every mathematical claim, physical assertion, and logical deduction has been independently conceived and rigorously verified by the author. The AI provided the computational audit; the author provides the truthmaker. The author assumes full and sole responsibility for the correctness, integrity, and physical interpretation of the results.
+
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}
+\CanonBibliographySetup
+
+\bibitem{perelman}
+G.~Perelman, ``The entropy formula for the Ricci flow and its geometric applications,'' arXiv:math/0211159 (2002).
+
+\bibitem{perelmanSurgery}
+G.~Perelman, ``Ricci flow with surgery on three-manifolds,'' arXiv:math/0303109 (2003).
+
+\bibitem{perelmanExtinction}
+G.~Perelman, ``Finite extinction time for the solutions to the Ricci flow on certain three-manifolds,'' arXiv:math/0307245 (2003).
+
+\bibitem{moise}
+E.~E.~Moise, \textit{Geometric Topology in Dimensions 2 and 3}, Graduate Texts in Mathematics, Vol.~47, Springer, 1977.
+
+\bibitem{hatcher}
+A.~E.~Hatcher, ``A proof of the Smale Conjecture, $\Diff(S^3)\simeq O(4)$,'' \textit{Annals of Mathematics} \textbf{117}, 553--607 (1983).
+
+\bibitem{wald}
+R.~M.~Wald, \textit{General Relativity}, University of Chicago Press, 1984.
+
+\bibitem{adm}
+R.~Arnowitt, S.~Deser, and C.~W.~Misner, ``The Dynamics of General Relativity,'' in L.~Witten (ed.), \textit{Gravitation: An Introduction to Current Research}, Wiley, 1962, pp.~227--264; reprinted in \textit{General Relativity and Gravitation} \textbf{40}, 1997--2027 (2008).
+
+\bibitem{minguzzi}
+E.~Minguzzi, ``Lorentzian causality theory,'' \textit{Living Reviews in Relativity} \textbf{22}, 3 (2019).
+
+\bibitem{kirby}
+R.~C.~Kirby and L.~R.~Taylor, ``Pin structures on low-dimensional manifolds,'' in S.~K.~Donaldson and C.~B.~Thomas (eds.), \textit{Geometry of Low-Dimensional Manifolds}, London Mathematical Society Lecture Note Series \textbf{151}, Cambridge University Press, 1990, pp.~177--242.
+
+\bibitem{margolus}
+N.~Margolus and L.~B.~Levitin, ``The maximum speed of dynamical evolution,'' \textit{Physica D} \textbf{120}, 188--195 (1998), doi:10.1016/S0167-2789(98)00054-2.
+
+\bibitem{CanonWhy}
+Canon, ``Shape of Reality: The Necessity of the Zero-Energy Klein Block,'' (Companion Philosophical Manuscript, Document I of the Three-Paper Architecture), Zenodo, 2026, \href{https://doi.org/10.5281/zenodo.22766109}{doi:10.5281/zenodo.22766109}.
+
+\bibitem{CanonHow}
+Canon, ``Twisted Dynamics on the Klein Block: A Conditional Framework for Kinematic Descent, Nodal Defect Structure, and Anomaly Constraints,'' (Companion Physics Manuscript, Document III of the Three-Paper Architecture), Zenodo, 2026, \href{https://doi.org/10.5281/zenodo.22766260}{doi:10.5281/zenodo.22766260}.
+
+\end{thebibliography}
+
+\end{document}
