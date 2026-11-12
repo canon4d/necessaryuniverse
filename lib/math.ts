@@ -2,7 +2,7 @@ import katex from 'katex'
 import { allMacros } from './content'
 
 /**
- * Every \providecommand from the three LaTeX preambles is handed to KaTeX, so
+ * Every \providecommand from the LaTeX preambles is handed to KaTeX, so
  * \Klein, \Sthree, \Diff and friends typeset on the web exactly as they do in
  * the PDFs. Rendering happens at build time; the browser ships no math JS.
  */

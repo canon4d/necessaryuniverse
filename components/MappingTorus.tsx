@@ -168,8 +168,8 @@ export default function MappingTorus() {
         Follow the little flag once around. It rotates gradually as it travels — and by the time it
         gets back to where it started, it isn&rsquo;t pointing the same way anymore. It&rsquo;s a
         mirror image of itself. That single fact about the shape of time &mdash; worked out precisely,
-        for space rather than a flag &mdash; is what the three papers derive, classify, and then try
-        to build physics on.
+        for space rather than a flag &mdash; is what the three-paper series derives, classifies, and then
+        tries to build physics on, and what its studies take as given.
       </figcaption>
     </figure>
   )

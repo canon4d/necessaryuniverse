@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { papers, SITE } from '@/lib/papers'
+import { documents, paperHref, SITE, studies } from '@/lib/papers'
 
 export const dynamic = 'force-static'
 
@@ -14,15 +14,25 @@ export const dynamic = 'force-static'
  * own crawl history, which is honest by construction. If a genuine
  * publication or revision date is ever tracked per document, add it back
  * here from that data rather than from `Date.now()`.
+ *
+ * Every URL ends with a slash. `trailingSlash: true` redirects the slashless
+ * form, and a sitemap should not advertise a URL that redirects.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
+  const monthly = 'monthly' as const
   return [
-    { url: `${SITE.origin}/`, changeFrequency: 'monthly', priority: 1 },
-    { url: `${SITE.origin}/argument`, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${SITE.origin}/podcasts`, changeFrequency: 'monthly', priority: 0.7 },
-    ...papers.map((p) => ({
-      url: `${SITE.origin}/${p.id}`,
-      changeFrequency: 'monthly' as const,
+    { url: `${SITE.origin}/`, changeFrequency: monthly, priority: 1 },
+    { url: `${SITE.origin}/argument/`, changeFrequency: monthly, priority: 0.9 },
+    { url: `${SITE.origin}/podcasts/`, changeFrequency: monthly, priority: 0.7 },
+    { url: `${SITE.origin}/studies/`, changeFrequency: monthly, priority: 0.8 },
+    ...documents.map((p) => ({
+      url: `${SITE.origin}${paperHref(p)}`,
+      changeFrequency: monthly,
+      priority: 0.8,
+    })),
+    ...studies.map((p) => ({
+      url: `${SITE.origin}${paperHref(p)}`,
+      changeFrequency: monthly,
       priority: 0.8,
     })),
   ]

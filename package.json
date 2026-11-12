@@ -2,13 +2,13 @@
   "name": "necessary-universe",
   "version": "2.0.0",
   "private": true,
-  "description": "Necessary Universe \u2014 a three-paper research series on the ontological, topological and dynamical structure of physical reality.",
+  "description": "Necessary Universe \u2014 a three-paper research series and its studies, on the ontological, topological and dynamical structure of physical reality.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "preview": "npx --yes serve out -l 3000",
     "typecheck": "tsc --noEmit",
-    "content": "python3 tools/latex-to-json.py && node tools/validate-math.js",
+    "content": "node tools/run-py.js tools/latex-to-json.py && node tools/validate-math.js",
     "check:math": "node tools/validate-math.js"
   },
   "dependencies": {

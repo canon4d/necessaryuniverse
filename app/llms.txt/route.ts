@@ -1,5 +1,5 @@
 import { getContent } from '@/lib/content'
-import { papers, SITE } from '@/lib/papers'
+import { documents, paperHref, RELATED, SITE, studies } from '@/lib/papers'
 
 export const dynamic = 'force-static'
 
@@ -23,59 +23,83 @@ function build(): string {
   lines.push(`> ${SITE.tagline}`)
   lines.push('')
   lines.push(
-    'Three independently authored documents that try to do three separate jobs without letting ' +
-      'them bleed into one another: argue philosophically that a small set of declared premises ' +
+    'A three-paper series and its studies. The three documents try to do three separate jobs without ' +
+      'letting them bleed into one another: argue philosophically that a small set of declared premises ' +
       '(identity, no brute facts, physical actualization) forces a specific family of closure ' +
       'conditions on any coherent physical reality; prove mathematically that those conditions, ' +
       'taken as strict hypotheses, leave exactly one smooth four-manifold standing (a non-orientable ' +
       'S3-bundle over S1, called the Klein Block); and test dynamically whether that fixed topology ' +
       'can actually host fermions, gauge fields, anomaly cancellation, and a coherent thermodynamic ' +
-      'arrow, naming explicitly every place it currently cannot. Independent research, self-archived ' +
-      'on Zenodo, not peer-reviewed. Each document states its own open problems and "not claimed" ' +
-      'list rather than asserting the chain is closed.'
+      'arrow, naming explicitly every place it currently cannot. Studies take that architecture as ' +
+      'given and carry one consequence further; they are not a fourth document. Independent research, ' +
+      'self-archived on Zenodo, not peer-reviewed. Each paper states its own open problems and ' +
+      '"not claimed" list rather than asserting the chain is closed.'
   )
   lines.push('')
 
   lines.push('## The three documents')
   lines.push('')
-  for (const p of papers) {
+  for (const p of documents) {
     const c = getContent(p.id)
     lines.push(
-      `- [${p.title}: ${p.subtitle}](${SITE.origin}/${p.id}): Document ${p.numeral} — ${p.discipline}, ` +
+      `- [${p.title}: ${p.subtitle}](${SITE.origin}${paperHref(p)}): Document ${p.numeral} — ${p.discipline}, ` +
         `${c.stats.words.toLocaleString()} words. ${p.question} Takes: ${p.takes} Gives: ${p.gives} ` +
         `DOI: ${p.doi}.`
     )
   }
   lines.push('')
 
-  lines.push('## Read the deductive chain across all three')
+  lines.push('## Studies')
+  lines.push('')
+  for (const p of studies) {
+    const c = getContent(p.id)
+    lines.push(
+      `- [${p.title}: ${p.subtitle}](${SITE.origin}${paperHref(p)}): Studies ${p.numeral} — ${p.discipline}, ` +
+        `${c.stats.words.toLocaleString()} words. Takes: ${p.takes} Gives: ${p.gives} ` +
+        `DOI: ${p.doi}.`
+    )
+  }
+  lines.push('')
+
+  lines.push('## Read the deductive chain across the three papers')
   lines.push('')
   lines.push(
-    `- [The argument](${SITE.origin}/argument): the full chain from three premises to five ` +
+    `- [The argument](${SITE.origin}/argument/): the full chain from three premises to five ` +
       'postulates to a unique four-manifold to the dynamics proposed on it, one page, with direct ' +
-      'links into the exact passage of each document that a given step depends on.'
+      'links into the exact passage of each document that a given step depends on, and a link to ' +
+      'Studies I where the topology forces the nodal hypersurface.'
   )
   lines.push('')
 
   lines.push('## Primary sources (PDF and LaTeX, no paywall or signup)')
   lines.push('')
-  for (const p of papers) {
+  for (const p of [...documents, ...studies]) {
     lines.push(`- ${p.title} — [PDF](${SITE.origin}${p.pdf}) · [LaTeX source](${SITE.origin}${p.tex})`)
   }
   lines.push('')
 
   lines.push('## Audio')
   lines.push('')
-  lines.push(`- [Listen](${SITE.origin}/podcasts): a spoken walkthrough of each document.`)
+  lines.push(
+    `- [Listen](${SITE.origin}/podcasts/): a spoken walkthrough of each document, and of the studies.`
+  )
+  lines.push('')
+
+  lines.push('## Related')
+  lines.push('')
+  lines.push(
+    `- [${RELATED.title}](${RELATED.href}): ${RELATED.note}`
+  )
   lines.push('')
 
   lines.push('## Citing this work')
   lines.push('')
   lines.push(
-    'Each document page has a Cite panel (BibTeX / APA / RIS) generated from its own DOI metadata. ' +
-      'When quoting or summarizing a specific claim, cite the individual document (I, II, or III), ' +
-      'not the series as a whole — the three documents make different kinds of claims (philosophical ' +
-      'argument, mathematical proof, conditional physics) and should not be flattened into one.'
+    'Each paper page has a Cite panel (BibTeX / APA / RIS) generated from its own DOI metadata. ' +
+      'When quoting or summarizing a specific claim, cite the individual document (I, II, or III) or ' +
+      'the individual study, not the series as a whole — the three documents make different kinds of ' +
+      'claims (philosophical argument, mathematical proof, conditional physics), and the studies make ' +
+      'their own, and none of them should be flattened into one.'
   )
   lines.push('')
 

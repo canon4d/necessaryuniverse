@@ -1,6 +1,19 @@
 import Link from 'next/link'
 import { getContent, readingMinutes } from '@/lib/content'
-import { apa, bibtex, byId, neighbours, papers, ris, SITE, type PaperId } from '@/lib/papers'
+import {
+  apa,
+  bibtex,
+  byId,
+  citationTitle,
+  documents,
+  neighbours,
+  paperHref,
+  ris,
+  seriesLabel,
+  SITE,
+  type PaperId,
+} from '@/lib/papers'
+import { byPodcastId } from '@/lib/podcasts'
 import { blocks as renderBlocks, inline, type RenderCtx } from '@/components/Nodes'
 import Contents from '@/components/Contents'
 import CitePanel from '@/components/CitePanel'
@@ -22,10 +35,12 @@ export default function Reader({ id }: { id: PaperId }) {
   const { prev, next } = neighbours(id)
   const minutes = readingMinutes(c.stats.words)
 
+  const episode = byPodcastId(id)
   const extras = [
     ...(c.bibliography.length ? [{ href: '#references', label: 'References' }] : []),
     { href: '#cite', label: 'Cite this paper' },
     { href: paper.pdf, label: 'Download the PDF' },
+    ...(paper.kind === 'study' && episode ? [{ href: `/podcasts/#${paper.id}`, label: 'Listen' }] : []),
   ]
 
   return (
@@ -33,7 +48,7 @@ export default function Reader({ id }: { id: PaperId }) {
       <header className="masthead">
         <div className="masthead-in">
           <p className="masthead-rn">
-            Document {paper.numeral}
+            {seriesLabel(paper)}
             <span>{paper.discipline}</span>
           </p>
           <h1>{paper.title}</h1>
@@ -54,6 +69,12 @@ export default function Reader({ id }: { id: PaperId }) {
               <a href={paper.tex} target="_blank" rel="noreferrer noopener">
                 LaTeX
               </a>
+              {paper.kind === 'study' && episode && (
+                <>
+                  <span className="sep" aria-hidden="true" />
+                  <a href={`/podcasts/#${paper.id}`}>Listen</a>
+                </>
+              )}
             </Field>
             <Field label="Extent">
               {c.stats.sections} sections, {minutes} min
@@ -113,30 +134,57 @@ export default function Reader({ id }: { id: PaperId }) {
             <CitePanel bibtex={bibtex(paper)} apa={apa(paper)} ris={ris(paper)} />
           </section>
 
-          <nav className="paper-foot" aria-label="Series navigation">
-            {prev ? (
-              <Link className="foot-link" href={`/${prev.id}`}>
-                <span className="dir">Document {prev.numeral}, before this</span>
-                <span className="ttl">{prev.title}</span>
-              </Link>
-            ) : (
-              <Link className="foot-link" href="/argument">
-                <span className="dir">Where this starts</span>
-                <span className="ttl">The argument in one page</span>
-              </Link>
-            )}
-            {next ? (
-              <Link className="foot-link to-end" href={`/${next.id}`}>
-                <span className="dir">Document {next.numeral}, next</span>
-                <span className="ttl">{next.title}</span>
-              </Link>
-            ) : (
-              <Link className="foot-link to-end" href="/">
-                <span className="dir">Back to the start</span>
-                <span className="ttl">All three papers</span>
-              </Link>
-            )}
-          </nav>
+          {paper.kind === 'study' ? (
+            <nav className="paper-foot" aria-label="Studies navigation">
+              {prev ? (
+                <Link className="foot-link" href={paperHref(prev)}>
+                  <span className="dir">Studies {prev.numeral}, before this</span>
+                  <span className="ttl">{prev.title}</span>
+                </Link>
+              ) : (
+                <Link className="foot-link" href="/studies/">
+                  <span className="dir">Studies</span>
+                  <span className="ttl">All studies</span>
+                </Link>
+              )}
+              {next ? (
+                <Link className="foot-link to-end" href={paperHref(next)}>
+                  <span className="dir">Studies {next.numeral}, next</span>
+                  <span className="ttl">{next.title}</span>
+                </Link>
+              ) : (
+                <Link className="foot-link to-end" href="/">
+                  <span className="dir">The series</span>
+                  <span className="ttl">Three papers and their studies</span>
+                </Link>
+              )}
+            </nav>
+          ) : (
+            <nav className="paper-foot" aria-label="Series navigation">
+              {prev ? (
+                <Link className="foot-link" href={paperHref(prev)}>
+                  <span className="dir">Document {prev.numeral}, before this</span>
+                  <span className="ttl">{prev.title}</span>
+                </Link>
+              ) : (
+                <Link className="foot-link" href="/argument/">
+                  <span className="dir">Where this starts</span>
+                  <span className="ttl">The argument in one page</span>
+                </Link>
+              )}
+              {next ? (
+                <Link className="foot-link to-end" href={paperHref(next)}>
+                  <span className="dir">Document {next.numeral}, next</span>
+                  <span className="ttl">{next.title}</span>
+                </Link>
+              ) : (
+                <Link className="foot-link to-end" href="/">
+                  <span className="dir">Back to the start</span>
+                  <span className="ttl">All three papers</span>
+                </Link>
+              )}
+            </nav>
+          )}
         </article>
       </div>
     </div>
@@ -146,31 +194,52 @@ export default function Reader({ id }: { id: PaperId }) {
 export function jsonLd(id: PaperId) {
   const p = byId(id)!
   const c = getContent(id)
-  return {
+  const series = {
+    '@type': 'CreativeWorkSeries',
+    name: SITE.name,
+    url: `${SITE.origin}/`,
+    hasPart: documents.map((q) => ({
+      '@type': 'ScholarlyArticle',
+      name: q.title,
+      url: `${SITE.origin}${paperHref(q)}`,
+      position: q.numeral,
+    })),
+  }
+  const base = {
     '@context': 'https://schema.org',
     '@type': 'ScholarlyArticle',
-    headline: `${p.title}: ${p.subtitle}`,
+    headline: citationTitle(p),
     name: p.title,
-    abstract: p.question,
+    abstract: p.kind === 'document' ? p.question : `${p.takes} ${p.gives}`,
     inLanguage: 'en',
-    datePublished: String(p.year),
-    author: { '@type': 'Person', name: SITE.author },
+    datePublished: p.kind === 'study' ? p.published : String(p.year),
+    author:
+      p.kind === 'study'
+        ? {
+            '@type': 'Person',
+            name: SITE.author,
+            sameAs: `https://orcid.org/${p.orcid}`,
+            identifier: { '@type': 'PropertyValue', propertyID: 'ORCID', value: p.orcid },
+          }
+        : { '@type': 'Person', name: SITE.author },
     publisher: { '@type': 'Organization', name: 'Zenodo' },
-    url: `${SITE.origin}/${p.id}`,
+    url: `${SITE.origin}${paperHref(p)}`,
     sameAs: p.doiUrl,
     identifier: { '@type': 'PropertyValue', propertyID: 'DOI', value: p.doi },
     about: p.discipline,
     wordCount: c.stats.words,
-    isPartOf: {
-      '@type': 'CreativeWorkSeries',
-      name: SITE.name,
-      url: SITE.origin,
-      hasPart: papers.map((q) => ({
-        '@type': 'ScholarlyArticle',
-        name: q.title,
-        url: `${SITE.origin}/${q.id}`,
-        position: q.numeral,
-      })),
-    },
+    isPartOf: series,
+  }
+  if (p.kind !== 'study') return base
+  return {
+    ...base,
+    license: p.licenseUrl,
+    numberOfPages: p.pages,
+    citation: documents.map((q) => ({
+      '@type': 'ScholarlyArticle',
+      name: citationTitle(q),
+      url: q.doiUrl,
+      sameAs: `${SITE.origin}${paperHref(q)}`,
+    })),
   }
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LaTeX -> structured JSON converter for the Necessary Universe three-paper series.
+LaTeX -> structured JSON converter for the Necessary Universe series and its studies.
 
 Produces a rich, render-ready tree:
   paper = { meta, abstract[inline], blocks[], toc[], bibliography[], footnotes[], labels{} }
@@ -17,6 +17,7 @@ PAPERS = [
     ("why",  "shape-of-reality.tex"),
     ("what", "the-klein-block.tex"),
     ("how",  "twisted-dynamics-on-the-klein-block.tex"),
+    ("studies-1", "klein-block-studies-i.tex"),
 ]
 
 # ---------------------------------------------------------------- utilities
@@ -167,6 +168,9 @@ class Ctx:
         self.footnotes = []
         self.eqcount = 0
         self.counters = {}
+        # Studies I uses \cref/\Cref for the name+number. Documents keep the
+        # historical number-only rendering, including Document I's one \cref.
+        self.named_cref = False
 
 
 def inline(s: str, ctx: Ctx):
@@ -265,16 +269,34 @@ def inline(s: str, ctx: Ctx):
             if cmd in ("ref", "autoref", "cref", "Cref", "eqref"):
                 g, j2 = read_group(s, j)
                 flush()
-                toks.append({"t": "ref", "k": (g or "").strip(), "eq": cmd == "eqref"})
+                if ctx.named_cref and cmd in ("cref", "Cref"):
+                    keys = [k.strip() for k in (g or "").split(",") if k.strip()]
+                    mark = "C" if cmd == "Cref" else "c"
+                    for k in keys or [""]:
+                        toks.append({"t": "ref", "k": k, "eq": False, "cref": mark})
+                else:
+                    toks.append({"t": "ref", "k": (g or "").strip(), "eq": cmd == "eqref"})
                 i = j2; continue
             if cmd == "cite":
-                _, j1 = read_optional(s, j)
+                opt, j1 = read_optional(s, j)
                 g, j2 = read_group(s, j1)
                 keys = [k.strip() for k in (g or "").split(",") if k.strip()]
                 for k in keys:
                     if k not in ctx.bibindex:
                         ctx.cites.append(k)
-                flush(); toks.append({"t": "cite", "k": keys}); i = j2; continue
+                flush()
+                tok = {"t": "cite", "k": keys}
+                if opt is not None and opt.strip():
+                    tok["note"] = inline(opt, ctx)
+                toks.append(tok)
+                i = j2; continue
+            if cmd == "S":
+                buf.append("\u00a7"); i = j; continue
+            if cmd == "renewcommand":
+                _, j = read_optional(s, j)
+                _, j = read_group(s, j)
+                _, j = read_group(s, j)
+                i = j; continue
             if cmd == "label":
                 g, j2 = read_group(s, j)
                 ctx.pending_label = (g or "").strip()
@@ -350,9 +372,11 @@ def plain(toks):
         elif k == "br":
             out.append(" ")
         elif k == "ref":
-            out.append(str(t.get("n", "")))
+            out.append((t.get("sep") or "") + (t.get("prefix") or "") + str(t.get("n", "")))
         elif k == "cite":
             out.append("[" + ",".join(str(x) for x in (t.get("n") or [])) + "]")
+            if t.get("note"):
+                out.append(plain(t["note"]))
     return "".join(out)
 
 
@@ -463,6 +487,43 @@ PAPER_THEOREMS = {
         "principle": ("Modeling Convention", "prin"),
         "frameworkdef": ("Framework Definition", "fd"),
     },
+    # (display name, counter group, scheme). scheme defaults to per-section
+    # "sec.n" when omitted. "alpha" and "H" are global, matching \Alph and Hn.
+    "studies-1": {
+        "theorem": ("Theorem", "thm"),
+        "lemma": ("Lemma", "thm"),
+        "corollary": ("Corollary", "thm"),
+        "definition": ("Definition", "thm"),
+        "remark": ("Remark", "thm"),
+        "proposition*": ("Proposition", "thm"),
+        "mainthm": ("Theorem", "main", "alpha"),
+        "hypothesis": ("Hypothesis", "hyp", "H"),
+        "conjecture": ("Conjecture", "conj"),
+        "postulate": ("Physical Postulate", "post"),
+        "proposition": ("Conditional Physical Proposition", "prop"),
+        "assumption": ("Modeling Assumption", "asm"),
+        "principle": ("Modeling Convention", "prin"),
+    },
+}
+
+# cleveref names for Studies I. \cref lowercases; \Cref capitalises the first.
+CREF_NAMES = {
+    "theorem": ("theorem", "theorems"),
+    "lemma": ("lemma", "lemmas"),
+    "corollary": ("corollary", "corollaries"),
+    "definition": ("definition", "definitions"),
+    "remark": ("remark", "remarks"),
+    "mainthm": ("theorem", "theorems"),
+    "proposition*": ("proposition", "propositions"),
+    "proposition": ("proposition", "propositions"),
+    "conjecture": ("conjecture", "conjectures"),
+    "hypothesis": ("hypothesis", "hypotheses"),
+    "postulate": ("postulate", "postulates"),
+    "assumption": ("assumption", "assumptions"),
+    "principle": ("convention", "conventions"),
+    "section": ("section", "sections"),
+    "equation": ("equation", "equations"),
+    "table": ("table", "tables"),
 }
 
 BOX_ENVS = {
@@ -488,15 +549,33 @@ class Doc:
         self.sec = 0
         self.sub = 0
         self.subsub = 0
+        self.sec_label = "0"
         self.counters = {}
         self.tablecount = 0
+        self.numbered_tables = 0
         self.thm_map = PAPER_THEOREMS[pid]
         self.anchor_seen = {}
+        # Letter the appendix only for Studies I. Documents I–III already
+        # publish appendix sections in the main numeric sequence.
+        self.letter_appendix = pid == "studies-1"
+        self.in_appendix = False
+        self.app_i = 0
+        self.list_depth = 0
+        self.enum_last = {}
 
-    def bump(self, group):
-        key = (group, self.sec)
+    def bump(self, group, scheme="section"):
+        if scheme == "alpha":
+            key = ("alpha", group)
+            self.counters[key] = self.counters.get(key, 0) + 1
+            return chr(ord("A") + self.counters[key] - 1)
+        if scheme == "H":
+            key = ("H", group)
+            self.counters[key] = self.counters.get(key, 0) + 1
+            return "H" + str(self.counters[key])
+        sec_key = self.sec_label if self.in_appendix else self.sec
+        key = (group, sec_key)
         self.counters[key] = self.counters.get(key, 0) + 1
-        return f"{self.sec}.{self.counters[key]}"
+        return f"{sec_key}.{self.counters[key]}"
 
     def anchor(self, base):
         base = re.sub(r"[^a-z0-9]+", "-", base.lower()).strip("-") or "s"
@@ -512,7 +591,7 @@ class Doc:
         lb = self.ctx.pending_label
         self.ctx.pending_label = None
         if lb:
-            self.ctx.labels[lb] = {"num": num, "kind": kind, "anchor": anchor}
+            self.ctx.labels[lb] = {"num": num, "kind": kind, "anchor": anchor, "env": "table"}
         return lb
 
 
@@ -520,35 +599,91 @@ def split_paragraphs(s):
     return [p for p in re.split(r"\n[ \t]*\n+", s) if p.strip()]
 
 
+def to_roman(n):
+    vals = [(10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i")]
+    out = []
+    while n >= 50:
+        out.append("l"); n -= 50
+    for v, s in vals:
+        while n >= v:
+            out.append(s); n -= v
+    return "".join(out) or "i"
+
+
+def expand_enum_label(template, n):
+    alpha = chr(ord("a") + n - 1) if 1 <= n <= 26 else str(n)
+    s = template
+    s = re.sub(r"\\Alph\*", alpha.upper(), s)
+    s = re.sub(r"\\alph\*", alpha, s)
+    s = re.sub(r"\\Roman\*", to_roman(n).upper(), s)
+    s = re.sub(r"\\roman\*", to_roman(n), s)
+    s = re.sub(r"\\arabic\*", str(n), s)
+    s = re.sub(r"\\textbf\{([^{}]*)\}", r"\1", s)
+    s = re.sub(r"\\(?:bfseries|mdseries|normalfont|sffamily)\b", "", s)
+    s = s.replace("{", "").replace("}", "")
+    return s.strip()
+
+
 def parse_list(body, ctx, doc, ordered):
     items = []
-    # split on \item at brace depth 0
-    idxs = []
-    depth, i, n = 0, 0, len(body)
-    while i < n:
-        if body[i] == "\\":
-            m = re.match(r"\\(item)\b", body[i:])
-            if m and depth == 0:
-                idxs.append(i)
-                i += m.end(); continue
-            i += 2; continue
-        if body[i] == "{":
-            depth += 1
-        elif body[i] == "}":
-            depth -= 1
-        i += 1
-    for k, st in enumerate(idxs):
-        en = idxs[k+1] if k + 1 < len(idxs) else n
-        chunk = body[st:en]
-        chunk = re.sub(r"^\\item\b", "", chunk.strip())
-        lbl, rest = read_optional(chunk, 0)
-        chunk = chunk[rest:] if lbl is not None else chunk
-        sub = parse_body(chunk, ctx, doc, inside=True)
-        items.append({"label": lbl, "blocks": sub})
+    template, resume = None, False
+    if ordered and doc.pid == "studies-1":
+        j = 0
+        while j < len(body) and body[j] in " \t\n":
+            j += 1
+        opt, after = read_optional(body, j)
+        if opt is not None:
+            body = body[after:]
+            resume = re.search(r"(?:^|,)\s*resume\b", opt) is not None
+            lm = re.search(r"label\s*=\s*([^,\]]+)", opt)
+            if lm:
+                template = lm.group(1).strip()
+    doc.list_depth += 1
+    list_level = doc.list_depth
+    enum_n = doc.enum_last.get(list_level, 0) if (resume and template) else 0
+    try:
+        # split on \item at brace depth 0. Studies I also ignores \item inside
+        # a nested environment so a list inside a list stays one item. Documents
+        # keep the historical split, which their published pages were built from.
+        idxs = []
+        brace, envd, i, nlen = 0, 0, 0, len(body)
+        track_env = doc.pid == "studies-1"
+        while i < nlen:
+            if body[i] == "\\":
+                if track_env and body.startswith("\\begin{", i) and brace == 0:
+                    envd += 1
+                elif track_env and body.startswith("\\end{", i) and brace == 0 and envd > 0:
+                    envd -= 1
+                m = re.match(r"\\item\b", body[i:])
+                if m and brace == 0 and envd == 0:
+                    idxs.append(i)
+                    i += m.end(); continue
+                i += 2; continue
+            if body[i] == "{":
+                brace += 1
+            elif body[i] == "}":
+                brace -= 1
+            i += 1
+        for k, st in enumerate(idxs):
+            en = idxs[k+1] if k + 1 < len(idxs) else nlen
+            chunk = body[st:en]
+            chunk = re.sub(r"^\\item\b", "", chunk.strip())
+            lbl, rest = read_optional(chunk, 0)
+            chunk = chunk[rest:] if lbl is not None else chunk
+            sub = parse_body(chunk, ctx, doc, inside=True)
+            item = {"label": lbl, "blocks": sub}
+            if template:
+                enum_n += 1
+                item["marker"] = expand_enum_label(template, enum_n)
+            items.append(item)
+        if template:
+            doc.enum_last[list_level] = enum_n
+    finally:
+        doc.list_depth -= 1
     return {"kind": "list", "ordered": ordered, "items": items}
 
 
-def parse_table(body, ctx, doc, caption=None, colspec=""):
+def parse_table(body, ctx, doc, caption=None, colspec="", number=True):
     # A \midrule that follows a \toprule marks the end of the header rows.
     head_src = None
     tm = re.search(r"\\toprule\b", body)
@@ -604,8 +739,14 @@ def parse_table(body, ctx, doc, caption=None, colspec=""):
         data = [cells(r) for r in (rows[1:] if is_header else rows)]
     ncol = max([len(head or [])] + [len(r) for r in data] + [1])
     doc.tablecount += 1
-    num = str(doc.tablecount)
-    anc = f"table-{num}"
+    if number:
+        doc.numbered_tables += 1
+        num = str(doc.numbered_tables)
+        anc = f"table-{num}"
+    else:
+        # A bare tabular is not a LaTeX float, so it must not consume Table 1, 2, …
+        num = ""
+        anc = f"table-u{doc.tablecount}"
     doc.take_label(anc, num, "Table")
     return {"kind": "table", "num": num, "anchor": anc, "head": head, "rows": data,
             "cols": ncol, "caption": caption}
@@ -636,11 +777,18 @@ def parse_body(s, ctx, doc, inside=False):
                         blocks.append({"kind": "paragraph", "c": toks})
 
     while i < n:
-        m = re.compile(r"\\(begin|section|subsection|subsubsection|paragraph|bibitem)\b\*?").search(s, i)
+        m = re.compile(r"\\(begin|section|subsection|subsubsection|paragraph|bibitem|appendix)\b\*?").search(s, i)
         if not m:
             break
         cmd = m.group(1)
         star = s[m.start():m.end()].endswith("*")
+
+        if cmd == "appendix":
+            flush_text(m.start())
+            if doc.letter_appendix:
+                doc.in_appendix = True
+                doc.app_i = 0
+            i = m.end(); buf_start = i; continue
 
         if cmd in ("section", "subsection", "subsubsection", "paragraph"):
             flush_text(m.start())
@@ -650,12 +798,21 @@ def parse_body(s, ctx, doc, inside=False):
             lvl = {"section": 1, "subsection": 2, "subsubsection": 3, "paragraph": 4}[cmd]
             num = None
             if not star and lvl <= 3:
-                if lvl == 1:
-                    doc.sec += 1; doc.sub = 0; doc.subsub = 0; num = str(doc.sec)
+                if lvl == 1 and doc.in_appendix:
+                    doc.app_i += 1
+                    doc.sec_label = chr(ord("A") + doc.app_i - 1)
+                    doc.sub = 0; doc.subsub = 0
+                    num = doc.sec_label
+                elif lvl == 1:
+                    doc.sec += 1; doc.sub = 0; doc.subsub = 0
+                    num = str(doc.sec)
+                    doc.sec_label = num
                 elif lvl == 2:
-                    doc.sub += 1; doc.subsub = 0; num = f"{doc.sec}.{doc.sub}"
+                    doc.sub += 1; doc.subsub = 0
+                    num = f"{doc.sec_label}.{doc.sub}"
                 else:
-                    doc.subsub += 1; num = f"{doc.sec}.{doc.sub}.{doc.subsub}"
+                    doc.subsub += 1
+                    num = f"{doc.sec_label}.{doc.sub}.{doc.subsub}"
             elif star and lvl == 1:
                 doc.sec = doc.sec  # unnumbered front matter
             anc = doc.anchor((num + "-" if num else "") + plain(toks)[:48])
@@ -663,10 +820,15 @@ def parse_body(s, ctx, doc, inside=False):
             look = s[j:j+220]
             lm = re.match(r"\s*\\label\{([^}]*)\}", look)
             if lm:
-                ctx.labels[lm.group(1)] = {"num": num or "", "kind": "Section", "anchor": anc}
+                ctx.labels[lm.group(1)] = {"num": num or "", "kind": "Section", "anchor": anc, "env": "section"}
                 j += lm.end()
+            text = plain(toks)
+            if doc.pid == "studies-1":
+                text = (text.replace("\\Sigma_0", "\u03a3\u2080")
+                            .replace("\\Sigma", "\u03a3")
+                            .replace("SO^+(1,3)", "SO\u207a(1,3)"))
             blocks.append({"kind": "heading", "level": lvl, "num": num,
-                           "anchor": anc, "c": toks, "text": plain(toks)})
+                           "anchor": anc, "c": toks, "text": text})
             i = j; buf_start = j; continue
 
         if cmd == "bibitem":
@@ -733,7 +895,7 @@ def numbered_align_block(body: str, ctx):
     Mirror that: one block, one explicit \\tag per numbered row, so the web
     equation numbers match the PDF exactly.  KaTeX draws the tags itself."""
     rows = split_align_rows(body)
-    tagged, plain_rows, nums, anchor = [], [], [], None
+    tagged, plain_rows, nums, numbered_rows, anchor = [], [], [], [], None
     for r in rows:
         skip = re.search(r"\\(nonumber|notag)\b", r) is not None
         lm = re.search(r"\\label\{([^}]*)\}", r)
@@ -744,22 +906,25 @@ def numbered_align_block(body: str, ctx):
             continue
         ctx.eqcount += 1
         num = str(ctx.eqcount)
+        row_anchor = f"eq-{num}"
         nums.append(num)
+        numbered_rows.append(cleaned)
         if anchor is None:
-            anchor = f"eq-{num}"
+            anchor = row_anchor
         if lm:
-            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": anchor}
+            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": row_anchor, "env": "equation"}
         tagged.append(cleaned + " \\tag{" + num + "}")
     tex = "\\begin{align}\n" + " \\\\\n".join(tagged) + "\n\\end{align}"
     copy = "\\begin{aligned}\n" + " \\\\\n".join(plain_rows) + "\n\\end{aligned}"
     return {"kind": "math", "tex": tex, "copy": copy, "num": None,
-            "nums": nums, "rows": [r for r in plain_rows], "anchor": anchor}
+            "nums": nums, "rows": list(plain_rows), "numbered_rows": numbered_rows,
+            "anchor": anchor}
 
 
 def handle_env(env, body, ctx, doc):
     base = env.rstrip("*")
 
-    if env == "align" and doc.pid == "how":
+    if env == "align" and doc.pid in ("how", "studies-1"):
         return numbered_align_block(body, ctx)
 
     if env in MATH_ENVS or base in ("displaymath",):
@@ -771,7 +936,7 @@ def handle_env(env, body, ctx, doc):
             num = str(ctx.eqcount)
         anc = f"eq-{num}" if num else None
         if lm and num:
-            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": anc}
+            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": anc, "env": "equation"}
         return {"kind": "math", "tex": tex, "num": num, "anchor": anc}
 
     if base in ("gathered", "aligned", "split", "cases", "pmatrix", "bmatrix"):
@@ -782,7 +947,9 @@ def handle_env(env, body, ctx, doc):
         return parse_list(body, ctx, doc, ordered=(env == "enumerate"))
 
     if env in doc.thm_map:
-        name, group = doc.thm_map[env]
+        spec = doc.thm_map[env]
+        name, group = spec[0], spec[1]
+        scheme = spec[2] if len(spec) > 2 else "section"
         title, k = read_optional(body, 0)
         rest = body[k:]
         lm = re.match(r"\s*\\label\{([^}]*)\}", rest)
@@ -794,10 +961,11 @@ def handle_env(env, body, ctx, doc):
             if lm2:
                 lab = lm2.group(1)
                 rest = rest[:lm2.start()] + rest[lm2.end():]
-        num = doc.bump(group)
-        anc = f"{env}-{num.replace('.', '-')}"
+        num = doc.bump(group, scheme)
+        slug = (env[:-1] + "-star") if env.endswith("*") else env
+        anc = f"{slug}-{num.replace('.', '-')}"
         if lab:
-            ctx.labels[lab] = {"num": num, "kind": name, "anchor": anc}
+            ctx.labels[lab] = {"num": num, "kind": name, "anchor": anc, "env": env}
         sub = parse_body(rest, ctx, doc, inside=True)
         return {"kind": "theorem", "env": env, "name": name, "num": num,
                 "anchor": anc, "title": inline(title, ctx) if title else None,
@@ -864,7 +1032,11 @@ def handle_env(env, body, ctx, doc):
     if env in TABLE_ENVS:
         _, r2 = read_optional(body, 0)
         _, r3 = read_group(body, r2)
-        return parse_table(body[r3:], ctx, doc)
+        # A bare tabular is not a numbered float. Studies I has one (the
+        # hypothesis matrix); counting it would renumber the captioned tables.
+        # Documents I–III number every tabular, and that published numbering stays.
+        number = doc.pid != "studies-1"
+        return parse_table(body[r3:], ctx, doc, number=number)
 
     if env in FLOAT_ENVS or env in ("quote", "quotation", "abstract", "flushleft", "flushright"):
         _, k = read_optional(body, 0)
@@ -896,11 +1068,69 @@ def extract_macros(pre):
     return macros
 
 
+def cref_words(info):
+    env = info.get("env") or ""
+    if env in CREF_NAMES:
+        return CREF_NAMES[env]
+    kind = (info.get("kind") or "reference").lower()
+    return (kind, kind + "s")
+
+
+def format_cref(group, ctx):
+    """cleveref run: 'propositions 3.1 and 3.2' / 'Theorems A, B and C'."""
+    infos = []
+    for t in group:
+        info = ctx.labels.get(t["k"])
+        if info:
+            t["n"] = info["num"]
+            t["a"] = info["anchor"]
+            t["kind"] = info["kind"]
+            if info.get("env") == "equation":
+                t["eq"] = True
+        else:
+            t["n"] = "?"
+            info = {"num": "?", "kind": "?", "env": ""}
+        infos.append(info)
+    runs = []
+    for t, info in zip(group, infos):
+        sing, plur = cref_words(info)
+        if runs and runs[-1][0] == sing:
+            runs[-1][2].append(t)
+        else:
+            runs.append([sing, plur, [t]])
+    cap = group[0].get("cref") == "C"
+    for run_i, (sing, plur, toks) in enumerate(runs):
+        name = plur if len(toks) > 1 else sing
+        if run_i == 0 and cap:
+            name = name[:1].upper() + name[1:]
+        for i, t in enumerate(toks):
+            if i == 0:
+                t["sep"] = "" if run_i == 0 else " and "
+                t["prefix"] = name + " "
+            elif i == len(toks) - 1:
+                t["sep"] = " and "
+                t["prefix"] = ""
+            else:
+                t["sep"] = ", "
+                t["prefix"] = ""
+
+
 def resolve_refs(node, ctx):
     """Walk the tree and attach resolved numbers to ref/cite tokens."""
     if isinstance(node, list):
-        for x in node:
-            resolve_refs(x, ctx)
+        i = 0
+        while i < len(node):
+            t = node[i]
+            if isinstance(t, dict) and t.get("t") == "ref" and t.get("cref"):
+                mark = t.get("cref")
+                j = i + 1
+                while j < len(node) and isinstance(node[j], dict) and node[j].get("t") == "ref" and node[j].get("cref") == mark:
+                    j += 1
+                format_cref(node[i:j], ctx)
+                i = j
+                continue
+            resolve_refs(t, ctx)
+            i += 1
         return
     if not isinstance(node, dict):
         return
@@ -957,6 +1187,7 @@ def main():
         macros = extract_macros(pre)
 
         ctx = Ctx()
+        ctx.named_cref = pid == "studies-1"
         doc = Doc(pid, ctx)
 
         # pre-scan bibliography so \cite numbers are stable and in bib order
@@ -1120,8 +1351,11 @@ def build_index(pid, blocks):
                             "t": plain(b["title"]) if b.get("title") else b["name"],
                             "s": section, "x": excerpt(b["blocks"], 150)})
             elif k == "math" and b.get("nums"):
-                for n_, r_ in zip(b["nums"], b["rows"]):
-                    out.append({"p": pid, "a": b["anchor"], "k": "Equation", "n": n_,
+                # `rows` keeps every align line, including \\nonumber/\\notag.
+                # Numbers line up only with the numbered lines, in that order.
+                src = b.get("numbered_rows") or b["rows"]
+                for n_, r_ in zip(b["nums"], src):
+                    out.append({"p": pid, "a": f"eq-{n_}", "k": "Equation", "n": n_,
                                 "t": "Equation " + n_, "s": section,
                                 "x": re.sub(r"\s+", " ", r_.replace("&", "")).strip()[:90]})
             elif k == "math" and b.get("num"):

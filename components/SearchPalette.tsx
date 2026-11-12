@@ -2,11 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { byId, paperHref, type PaperId } from '@/lib/papers'
 
 type Entry = { p: string; a: string; k: string; n: string; t: string; s: string; x: string }
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || ''
-const KEY_LABEL: Record<string, string> = { why: 'Why', what: 'What', how: 'How' }
+const KEY_LABEL: Record<PaperId, string> = {
+  why: 'Why',
+  what: 'What',
+  how: 'How',
+  'studies-1': 'Studies I',
+}
 
 function score(e: Entry, q: string): number {
   const t = e.t.toLowerCase()
@@ -74,7 +80,9 @@ export default function SearchPalette({ onClose }: { onClose: () => void }) {
 
   function go(e: Entry) {
     onClose()
-    router.push(`/${e.p}#${e.a}`)
+    const paper = byId(e.p)
+    const href = paper ? paperHref(paper) : `/${e.p}/`
+    router.push(`${href}#${e.a}`)
   }
 
   function onKey(ev: React.KeyboardEvent) {
@@ -131,12 +139,12 @@ export default function SearchPalette({ onClose }: { onClose: () => void }) {
               onClick={() => go(e)}
             >
               <span className="kind">
-                {e.k === 'Section' ? KEY_LABEL[e.p] : `${e.k === 'Equation' ? 'Eq.' : e.k} ${e.n}`}
+                {e.k === 'Section' ? (KEY_LABEL[e.p as PaperId] ?? e.p) : `${e.k === 'Equation' ? 'Eq.' : e.k} ${e.n}`}
               </span>
               <span>
                 <span className="ttl">{e.t}</span>
                 <span className="sub">
-                  {KEY_LABEL[e.p]}
+                  {KEY_LABEL[e.p as PaperId] ?? e.p}
                   {e.s ? ` · ${e.s}` : ''}
                 </span>
               </span>
