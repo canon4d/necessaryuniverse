@@ -13,8 +13,8 @@ export type Tok =
   | { t: 'strong'; c: Tok[] }
   | { t: 'sc'; c: Tok[] }
   | { t: 'link'; href: string; c: Tok[] }
-  | { t: 'ref'; k: string; n: string; a?: string; kind?: string; eq?: boolean }
-  | { t: 'cite'; k: string[]; n: (number | string)[] }
+  | { t: 'ref'; k: string; n: string; a?: string; kind?: string; eq?: boolean; prefix?: string; sep?: string }
+  | { t: 'cite'; k: string[]; n: (number | string)[]; note?: Tok[] }
 
 /* ------------------------------------------------------------------ blocks */
 
@@ -34,7 +34,11 @@ export type Theorem = {
 }
 export type Proof = { kind: 'proof'; title: Tok[] | null; blocks: Block[] }
 export type Box = { kind: 'box'; variant: string; name: string; title: Tok[] | null; blocks: Block[] }
-export type ListBlk = { kind: 'list'; ordered: boolean; items: { label: string | null; blocks: Block[] }[] }
+export type ListBlk = {
+  kind: 'list'
+  ordered: boolean
+  items: { label: string | null; marker?: string; blocks: Block[] }[]
+}
 export type TableBlk = {
   kind: 'table'; num: string; anchor: string; cols: number
   head: Tok[][] | null; rows: Tok[][][]; caption: Tok[] | null
