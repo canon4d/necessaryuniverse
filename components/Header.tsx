@@ -48,6 +48,7 @@ function StudiesNav({ path }: { path: string }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const itemsRef = useRef<Array<HTMLAnchorElement | null>>([])
+  const closeTimer = useRef<number | null>(null)
   const menuId = useId()
   const active = pathStarts(path, '/studies/')
   const entries = [
@@ -55,17 +56,60 @@ function StudiesNav({ path }: { path: string }) {
     { href: '/studies/', label: 'All studies' },
   ]
 
+  function clearCloseTimer() {
+    if (closeTimer.current != null) {
+      window.clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+  }
+
+  function openNow() {
+    clearCloseTimer()
+    setOpen(true)
+  }
+
+  function closeNow(focusTrigger = false) {
+    clearCloseTimer()
+    setOpen(false)
+    if (focusTrigger) btnRef.current?.focus()
+  }
+
+  useEffect(() => () => clearCloseTimer(), [])
+
   useEffect(() => {
     if (!open) return
     function onPointer(e: MouseEvent) {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
+      if (!wrapRef.current?.contains(e.target as Node)) closeNow(true)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      closeNow(true)
     }
     document.addEventListener('mousedown', onPointer)
-    return () => document.removeEventListener('mousedown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [open])
 
-  function hoverOpen(next: boolean) {
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) setOpen(next)
+  function canHover() {
+    return window.matchMedia('(hover: hover) and (pointer: fine)').matches
+  }
+
+  function onWrapEnter() {
+    if (!canHover()) return
+    openNow()
+  }
+
+  function onWrapLeave() {
+    if (!canHover()) return
+    clearCloseTimer()
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = null
+      setOpen(false)
+    }, 250)
   }
 
   function focusItem(index: number) {
@@ -79,12 +123,12 @@ function StudiesNav({ path }: { path: string }) {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault()
       const index = e.key === 'ArrowDown' ? 0 : entries.length - 1
-      setOpen(true)
+      openNow()
       requestAnimationFrame(() => focusItem(index))
     }
     if (e.key === 'Escape' && open) {
       e.preventDefault()
-      setOpen(false)
+      closeNow(true)
     }
   }
 
@@ -99,10 +143,9 @@ function StudiesNav({ path }: { path: string }) {
       focusItem(i < 0 ? items.length - 1 : i - 1)
     } else if (e.key === 'Escape') {
       e.preventDefault()
-      setOpen(false)
-      btnRef.current?.focus()
+      closeNow(true)
     } else if (e.key === 'Tab') {
-      setOpen(false)
+      closeNow(false)
     }
   }
 
@@ -110,8 +153,8 @@ function StudiesNav({ path }: { path: string }) {
     <div
       className="nav-dd"
       ref={wrapRef}
-      onMouseEnter={() => hoverOpen(true)}
-      onMouseLeave={() => hoverOpen(false)}
+      onMouseEnter={onWrapEnter}
+      onMouseLeave={onWrapLeave}
     >
       <button
         ref={btnRef}
@@ -121,12 +164,15 @@ function StudiesNav({ path }: { path: string }) {
         aria-haspopup="true"
         aria-controls={menuId}
         aria-current={active ? 'page' : undefined}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          clearCloseTimer()
+          setOpen((o) => !o)
+        }}
         onKeyDown={onButtonKey}
       >
         Studies
         <span className="nav-caret" aria-hidden="true">
-          {open ? '▴' : '▾'}
+          ▾
         </span>
       </button>
       {open && (
@@ -145,7 +191,7 @@ function StudiesNav({ path }: { path: string }) {
                 }}
                 aria-current={here ? 'page' : undefined}
                 className={isAll ? 'nav-menu-all' : undefined}
-                onClick={() => setOpen(false)}
+                onClick={() => closeNow(false)}
               >
                 {entry.label}
               </Link>
