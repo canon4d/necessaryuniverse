@@ -13,8 +13,7 @@ This repository is the source for **[necessaryuniverse.com](https://necessaryuni
 ## Table of contents
 
 - [What this is](#what-this-is)
-- [The three documents](#the-three-documents)
-- [Studies](#studies)
+- [The three documents and the studies](#the-three-documents-and-the-studies)
 - [Site features](#site-features)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
@@ -39,13 +38,16 @@ Necessary Universe is an independent research program, written entirely outside 
 
 Each paper is written to stand on its own, but the three documents are designed to be read as a chain: Document I hands its five postulates to Document II as hypotheses; Document II hands its topological uniqueness result to Document III as fixed background geometry. Studies are not a fourth document. They take that closed architecture as given and carry one consequence further. The website's job is to make that chain of dependency legible — every theorem, postulate, and open problem is a deep link, so a claim in Document III that depends on Document I can be checked in two clicks.
 
-## The three documents
+## The three documents and the studies
 
-| | Document | Discipline | What it takes | What it gives |
+Studies sit on a separate shelf beside the three documents. Klein Block Studies I is not Document IV.
+
+| | Paper | Discipline | What it takes | What it gives |
 |---|---|---|---|---|
 | **I — Why** | [*Shape of Reality*: The Necessity of the Zero-Energy Klein Block](https://necessaryuniverse.com/why/) | Philosophy of Physics | Three declared premises | Five closure-admissible postulates |
 | **II — What** | [*The Klein Block*: Topological Uniqueness of the Non-Orientable S³-Bundle over S¹](https://necessaryuniverse.com/what/) | Differential Topology | The five postulates, as strict hypotheses | Exactly one admissible four-manifold |
 | **III — How** | [*Twisted Dynamics on the Klein Block*: A Conditional Framework for Kinematic Descent, Nodal Defect Structure, and Anomaly Constraints](https://necessaryuniverse.com/how/) | Mathematical Physics | The fixed topology of Document II | Descent conditions, defect structure, and a ledger of named open problems |
+| **Studies I** | [*Klein Block Studies I*: Topological Necessity of Conformal Nodal Hypersurfaces on the Non-Orientable S³-Bundle over S¹ and the Free-Boundary Variational Selection of Conformally Regular Solutions](https://necessaryuniverse.com/studies/klein-block-studies-i/) | Mathematical Cosmology | The fixed topology of Document II and the free-boundary action principle | A forced nodal hypersurface, a variational face condition, conditional smooth descent, and an exact Pell-tower mode classification |
 
 Each is also archived on Zenodo with its own DOI:
 
@@ -55,14 +57,6 @@ Each is also archived on Zenodo with its own DOI:
 | II — The Klein Block | [10.5281/zenodo.22766247](https://doi.org/10.5281/zenodo.22766247) |
 | III — Twisted Dynamics on the Klein Block | [10.5281/zenodo.22766260](https://doi.org/10.5281/zenodo.22766260) |
 | Studies I — Klein Block Studies I | [10.5281/zenodo.24143287](https://doi.org/10.5281/zenodo.24143287) |
-
-## Studies
-
-Studies are a separate shelf. They are not Document IV, and the series is not four papers.
-
-| | Study | Discipline | What it takes | What it gives |
-|---|---|---|---|---|
-| **Studies I** | [*Klein Block Studies I*: Topological Necessity of Conformal Nodal Hypersurfaces on the Non-Orientable S³-Bundle over S¹ and the Free-Boundary Variational Selection of Conformally Regular Solutions](https://necessaryuniverse.com/studies/klein-block-studies-i/) | Mathematical Cosmology | The fixed topology of Document II and the free-boundary action principle | A forced nodal hypersurface, a variational face condition, conditional smooth descent, and an exact Pell-tower mode classification |
 
 Current content, measured directly from source (`npm run content`):
 
