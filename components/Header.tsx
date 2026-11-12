@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { papers } from '@/lib/papers'
+import { useEffect, useId, useRef, useState } from 'react'
+import { documents, paperHref, studies } from '@/lib/papers'
 import SearchPalette from './SearchPalette'
 
 function SeriesGlyph() {
@@ -34,6 +34,126 @@ function SeriesGlyph() {
         </clipPath>
       </defs>
     </svg>
+  )
+}
+
+function pathStarts(path: string, href: string) {
+  const p = path.endsWith('/') ? path : `${path}/`
+  const h = href.endsWith('/') ? href : `${href}/`
+  return p === h || p.startsWith(h)
+}
+
+function StudiesNav({ path }: { path: string }) {
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const itemsRef = useRef<Array<HTMLAnchorElement | null>>([])
+  const menuId = useId()
+  const active = pathStarts(path, '/studies/')
+  const entries = [
+    ...studies.map((s) => ({ href: paperHref(s), label: s.title })),
+    { href: '/studies/', label: 'All studies' },
+  ]
+
+  useEffect(() => {
+    if (!open) return
+    function onPointer(e: MouseEvent) {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onPointer)
+    return () => document.removeEventListener('mousedown', onPointer)
+  }, [open])
+
+  function hoverOpen(next: boolean) {
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) setOpen(next)
+  }
+
+  function focusItem(index: number) {
+    const items = itemsRef.current.filter((el): el is HTMLAnchorElement => Boolean(el))
+    if (items.length === 0) return
+    const i = (index + items.length) % items.length
+    items[i]?.focus()
+  }
+
+  function onButtonKey(e: React.KeyboardEvent) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const index = e.key === 'ArrowDown' ? 0 : entries.length - 1
+      setOpen(true)
+      requestAnimationFrame(() => focusItem(index))
+    }
+    if (e.key === 'Escape' && open) {
+      e.preventDefault()
+      setOpen(false)
+    }
+  }
+
+  function onMenuKey(e: React.KeyboardEvent) {
+    const items = itemsRef.current.filter((el): el is HTMLAnchorElement => Boolean(el))
+    const i = items.indexOf(document.activeElement as HTMLAnchorElement)
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      focusItem(i < 0 ? 0 : i + 1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      focusItem(i < 0 ? items.length - 1 : i - 1)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setOpen(false)
+      btnRef.current?.focus()
+    } else if (e.key === 'Tab') {
+      setOpen(false)
+    }
+  }
+
+  return (
+    <div
+      className="nav-dd"
+      ref={wrapRef}
+      onMouseEnter={() => hoverOpen(true)}
+      onMouseLeave={() => hoverOpen(false)}
+    >
+      <button
+        ref={btnRef}
+        className="nav-dd-btn"
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-controls={menuId}
+        aria-current={active ? 'page' : undefined}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={onButtonKey}
+      >
+        Studies
+        <span className="nav-caret" aria-hidden="true">
+          {open ? '▴' : '▾'}
+        </span>
+      </button>
+      {open && (
+        <div id={menuId} className="nav-menu" role="group" aria-label="Studies" onKeyDown={onMenuKey}>
+          {entries.map((entry, i) => {
+            const isAll = entry.href === '/studies/'
+            const here = isAll
+              ? path === '/studies' || path === '/studies/'
+              : pathStarts(path, entry.href)
+            return (
+              <Link
+                key={entry.href}
+                href={entry.href}
+                ref={(el) => {
+                  itemsRef.current[i] = el
+                }}
+                aria-current={here ? 'page' : undefined}
+                className={isAll ? 'nav-menu-all' : undefined}
+                onClick={() => setOpen(false)}
+              >
+                {entry.label}
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -72,7 +192,10 @@ export default function Header() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const isActive = (href: string) => path === href || path === `${href}/`
+  const isActive = (href: string) => {
+    const norm = (s: string) => (s.length > 1 && s.endsWith('/') ? s.slice(0, -1) : s)
+    return norm(path) === norm(href)
+  }
 
   return (
     <>
@@ -86,20 +209,18 @@ export default function Header() {
           </Link>
 
           <nav className="hdr-nav" aria-label="Papers">
-            {papers.map((p) => (
+            {documents.map((p) => (
               <Link
                 key={p.id}
-                href={`/${p.id}`}
-                aria-current={isActive(`/${p.id}`) ? 'page' : undefined}
+                href={paperHref(p)}
+                aria-current={isActive(paperHref(p)) ? 'page' : undefined}
               >
                 <span className="rn">{p.numeral}</span>
                 {p.key}
               </Link>
             ))}
-            <Link href="/argument" aria-current={isActive('/argument') ? 'page' : undefined}>
-              Argument
-            </Link>
-            <Link href="/podcasts" aria-current={isActive('/podcasts') ? 'page' : undefined}>
+            <StudiesNav path={path} />
+            <Link href="/podcasts/" aria-current={isActive('/podcasts/') ? 'page' : undefined}>
               Listen
             </Link>
           </nav>
