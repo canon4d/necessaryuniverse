@@ -5,13 +5,12 @@ import 'katex/dist/katex.min.css'
 import './globals.css'
 import Header from '@/components/Header'
 import ReaderChrome from '@/components/ReaderChrome'
-import { papers, SITE } from '@/lib/papers'
+import { documents, paperHref, RELATED, SITE, studies } from '@/lib/papers'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.origin),
-  title: { default: `${SITE.name} — a three-paper series`, template: `%s — ${SITE.name}` },
-  description:
-    'Three papers deriving the shape of the universe from the law of identity: the ontological argument, the topological classification, and the conditional dynamics.',
+  title: { default: `${SITE.name} — a three-paper series and its studies`, template: `%s — ${SITE.name}` },
+  description: SITE.tagline,
   authors: [{ name: SITE.author }],
   alternates: { canonical: '/' },
   icons: {
@@ -25,9 +24,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: SITE.name,
-    title: `${SITE.name} — a three-paper series`,
+    title: `${SITE.name} — a three-paper series and its studies`,
     description: SITE.tagline,
-    url: SITE.origin,
+    url: `${SITE.origin}/`,
     images: [{ url: '/assets/og-card.png', width: 1200, height: 630, alt: SITE.tagline }],
   },
   twitter: {
@@ -59,6 +58,22 @@ export const viewport: Viewport = {
 // Google Analytics 4 measurement ID.
 const GA_ID = 'G-3GRK4FC3E9'
 
+const siteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: `${SITE.origin}/`,
+  description: SITE.tagline,
+  relatedLink: RELATED.href,
+  sameAs: RELATED.href,
+  publisher: {
+    '@type': 'Organization',
+    name: SITE.name,
+    url: `${SITE.origin}/`,
+    sameAs: RELATED.href,
+  },
+}
+
 /* Applied before first paint so the chosen theme never flashes. */
 const THEME_BOOT = `(function(){try{var s=localStorage.getItem('nu-theme');var m=window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.setAttribute('data-theme',s||(m?'dark':'light'));}catch(e){document.documentElement.setAttribute('data-theme','light');}})();`
 
@@ -87,6 +102,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+        />
         <a className="skip" href="#main">
           Skip to content
         </a>
@@ -100,18 +119,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <h2>The series</h2>
                 <ul>
-                  {papers.map((p) => (
+                  {documents.map((p) => (
                     <li key={p.id}>
-                      <Link href={`/${p.id}`}>
+                      <Link href={paperHref(p)}>
                         {p.numeral}. {p.title}
                       </Link>
                     </li>
                   ))}
+                  {studies.map((p) => (
+                    <li key={p.id}>
+                      <Link href={paperHref(p)}>{p.title}</Link>
+                    </li>
+                  ))}
                   <li>
-                    <Link href="/argument">The argument in one page</Link>
+                    <Link href="/argument/">The argument in one page</Link>
                   </li>
                   <li>
-                    <Link href="/podcasts">Listen to the series</Link>
+                    <Link href="/podcasts/">Listen to the series</Link>
                   </li>
                 </ul>
               </div>
@@ -119,7 +143,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <h2>Full text</h2>
                 <ul>
-                  {papers.map((p) => (
+                  {documents.map((p) => (
+                    <li key={p.id}>
+                      <a href={p.pdf}>{p.title} (PDF)</a>
+                    </li>
+                  ))}
+                  {studies.map((p) => (
                     <li key={p.id}>
                       <a href={p.pdf}>{p.title} (PDF)</a>
                     </li>
@@ -130,13 +159,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <h2>Record</h2>
                 <ul>
-                  {papers.map((p) => (
+                  {documents.map((p) => (
                     <li key={p.id}>
-                      <a href={p.doiUrl} target="_blank" rel="noreferrer noopener">
-                        DOI, Document {p.numeral}
-                      </a>
+                      <a href={p.doiUrl}>DOI, Document {p.numeral}</a>
                     </li>
                   ))}
+                  {studies.map((p) => (
+                    <li key={p.id}>
+                      <a href={p.doiUrl}>DOI, Studies {p.numeral}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h2>Beyond the series</h2>
+                <ul>
+                  <li>
+                    <a href={RELATED.href}>{RELATED.title}</a>
+                    <span className="foot-aside">{RELATED.note}</span>
+                  </li>
                 </ul>
               </div>
             </div>
