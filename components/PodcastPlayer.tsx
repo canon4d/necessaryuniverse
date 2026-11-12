@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { podcasts, formatDuration, type Podcast } from '@/lib/podcasts'
+import { documentPodcasts, formatDuration, podcasts, podcastTitle, studyPodcasts, type Podcast } from '@/lib/podcasts'
 
 const RATES = [1, 1.25, 1.5, 1.75, 2, 0.75]
 const PROGRESS_KEY = 'nu-podcast-progress'
@@ -98,6 +98,51 @@ function VolumeIcon({ level }: { level: number }) {
   )
 }
 
+function EpisodeGroup({
+  heading,
+  items,
+  index,
+  playing,
+  onSelect,
+}: {
+  heading: string
+  items: Podcast[]
+  index: number
+  playing: boolean
+  onSelect: (i: number) => void
+}) {
+  return (
+    <div className="pp-group">
+      <h2 className="pp-group-h">{heading}</h2>
+      {items.map((p) => {
+        const i = podcasts.findIndex((q) => q.id === p.id)
+        const isActive = i === index
+        return (
+          <button
+            key={p.id}
+            id={p.id}
+            type="button"
+            className={`pp-row${isActive ? ' is-active' : ''}`}
+            data-tone={p.tone}
+            onClick={() => onSelect(i)}
+            aria-current={isActive ? 'true' : undefined}
+          >
+            <span className="pp-row-num">{isActive ? <EqBars animate={playing} /> : p.numeral}</span>
+            <span className="pp-row-main">
+              <span className="pp-row-title">{podcastTitle(p)}</span>
+              <span className="pp-row-blurb">{p.blurb}</span>
+            </span>
+            <span className="pp-row-dur">{formatDuration(p.duration)}</span>
+            <span className="pp-row-play" aria-hidden="true">
+              {isActive && playing ? <PauseIcon /> : <PlayIcon />}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function PodcastPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const saveTimer = useRef<number | null>(null)
@@ -117,9 +162,15 @@ export default function PodcastPlayer() {
   // Load last-played track + volume once, client-side only.
   useEffect(() => {
     try {
-      const lastId = localStorage.getItem('nu-podcast-last')
-      const i = podcasts.findIndex((p) => p.id === lastId)
-      if (i >= 0) setIndex(i)
+      const hash = window.location.hash.replace(/^#/, '')
+      const hashIndex = podcasts.findIndex((p) => p.id === hash)
+      if (hashIndex >= 0) {
+        setIndex(hashIndex)
+      } else {
+        const lastId = localStorage.getItem('nu-podcast-last')
+        const i = podcasts.findIndex((p) => p.id === lastId)
+        if (i >= 0) setIndex(i)
+      }
       const v = localStorage.getItem('nu-podcast-volume')
       if (v !== null) {
         const n = parseFloat(v)
@@ -277,7 +328,7 @@ export default function PodcastPlayer() {
             <p className="pp-kicker">
               {track.episode} · {track.discipline}
             </p>
-            <h1 className="pp-title">{track.title}</h1>
+            <h1 className="pp-title">{podcastTitle(track)}</h1>
             <p className="pp-sub">{track.subtitle}</p>
           </div>
         </div>
@@ -344,31 +395,8 @@ export default function PodcastPlayer() {
       </section>
 
       <section className="pp-list shell" aria-label="Episodes">
-        {podcasts.map((p, i) => {
-          const isActive = i === index
-          return (
-            <button
-              key={p.id}
-              type="button"
-              className={`pp-row${isActive ? ' is-active' : ''}`}
-              data-tone={p.tone}
-              onClick={() => selectTrack(i)}
-              aria-current={isActive ? 'true' : undefined}
-            >
-              <span className="pp-row-num">
-                {isActive ? <EqBars animate={playing} /> : p.numeral}
-              </span>
-              <span className="pp-row-main">
-                <span className="pp-row-title">{p.title}</span>
-                <span className="pp-row-blurb">{p.blurb}</span>
-              </span>
-              <span className="pp-row-dur">{formatDuration(p.duration)}</span>
-              <span className="pp-row-play" aria-hidden="true">
-                {isActive && playing ? <PauseIcon /> : <PlayIcon />}
-              </span>
-            </button>
-          )
-        })}
+        <EpisodeGroup heading="Documents" items={documentPodcasts} index={index} playing={playing} onSelect={selectTrack} />
+        <EpisodeGroup heading="Studies" items={studyPodcasts} index={index} playing={playing} onSelect={selectTrack} />
       </section>
     </div>
   )
