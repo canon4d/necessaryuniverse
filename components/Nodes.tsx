@@ -6,6 +6,8 @@ export type RenderCtx = {
   previews: Record<string, Preview>
   /** Anchor prefix so equation/theorem ids stay unique if ever embedded twice. */
   idFor: (anchor: string) => string
+  /** Set inside a preview card so a reference cannot open another card. */
+  nest?: boolean
 }
 
 /* ------------------------------------------------------------------ inline */
@@ -61,6 +63,7 @@ function tok(t: Tok, ctx: RenderCtx): React.ReactNode {
               <a href={`#ref-${n}`}>{n}</a>
             </React.Fragment>
           ))}
+          {t.note && t.note.length > 0 ? <>, {inline(t.note, ctx)}</> : null}
           ]
         </span>
       )
@@ -73,21 +76,36 @@ function tok(t: Tok, ctx: RenderCtx): React.ReactNode {
 
 function crossRef(t: Extract<Tok, { t: 'ref' }>, ctx: RenderCtx): React.ReactNode {
   const label = t.eq ? `(${t.n})` : t.n
-  if (!t.a) return <span className="citeref">{label}</span>
-  const p = ctx.previews[t.a]
-  return (
+  const preview = !ctx.nest && t.a ? ctx.previews[t.a] : undefined
+  const nested: RenderCtx = { ...ctx, nest: true }
+  const body = !t.a ? (
+    <span className="citeref">{label}</span>
+  ) : (
     <span className="xref">
       <a href={`#${ctx.idFor(t.a)}`}>{label}</a>
-      {p && (
+      {preview && (
         <span className="xref-card" role="note">
           <b>
-            {p.kind} {p.num}
-            {p.title.length > 0 && <>{' \u2014 '}{inline(p.title, ctx)}</>}
+            {preview.kind} {preview.num}
+            {preview.title.length > 0 && (
+              <>
+                {' \u2014 '}
+                {inline(preview.title, nested)}
+              </>
+            )}
           </b>
-          {inline(p.text, ctx)}
+          {inline(preview.text, nested)}
         </span>
       )}
     </span>
+  )
+  if (!t.prefix && !t.sep) return body
+  return (
+    <>
+      {t.sep}
+      {t.prefix}
+      {body}
+    </>
   )
 }
 
@@ -174,8 +192,18 @@ function block(b: Block, ctx: RenderCtx): React.ReactNode {
       )
 
     case 'list': {
-      const items = b.items.map((it, i) => <li key={i}>{blocks(it.blocks, ctx)}</li>)
-      return b.ordered ? <ol>{items}</ol> : <ul>{items}</ul>
+      const labeled = b.items.some((it) => it.marker)
+      const items = b.items.map((it, i) => (
+        <li key={i} className={it.marker ? 'has-marker' : undefined}>
+          {it.marker ? <span className="li-marker">{it.marker}</span> : null}
+          {it.marker ? <div>{blocks(it.blocks, ctx)}</div> : blocks(it.blocks, ctx)}
+        </li>
+      ))
+      return b.ordered ? (
+        <ol className={labeled ? 'labeled' : undefined}>{items}</ol>
+      ) : (
+        <ul>{items}</ul>
+      )
     }
 
     case 'table':

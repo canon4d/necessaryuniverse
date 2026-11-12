@@ -1,19 +1,19 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getContent } from '@/lib/content'
-import { byId, SITE, type PaperId } from '@/lib/papers'
+import { byId, paperHref, SITE, type PaperId } from '@/lib/papers'
 import { inline, type RenderCtx } from '@/components/Nodes'
 
 export const metadata: Metadata = {
   title: 'The argument in one page',
   description:
     'The deductive chain of the Necessary Universe series, from three premises to five postulates to a unique four-manifold and the dynamics proposed on it.',
-  alternates: { canonical: '/argument' },
+  alternates: { canonical: '/argument/' },
   openGraph: {
     title: 'The argument in one page',
     description:
       'The deductive chain of the Necessary Universe series, from three premises to five postulates to a unique four-manifold and the dynamics proposed on it.',
-    url: '/argument',
+    url: '/argument/',
     type: 'article',
   },
 }
@@ -83,6 +83,7 @@ const STAGES: Stage[] = [
       { paper: 'what', anchor: 'theorem-3-3' },
       { paper: 'what', anchor: 'corollary-3-4' },
       { paper: 'what', anchor: 'definition-3-5' },
+      { paper: 'studies-1', anchor: 'mainthm-A', label: 'Thm. A' },
     ],
   },
   {
@@ -129,10 +130,11 @@ const STAGES: Stage[] = [
 ]
 
 export default function ArgumentPage() {
-  const content: Record<string, ReturnType<typeof getContent>> = {
+  const content: Record<PaperId, ReturnType<typeof getContent>> = {
     why: getContent('why'),
     what: getContent('what'),
     how: getContent('how'),
+    'studies-1': getContent('studies-1'),
   }
 
   return (
@@ -171,7 +173,7 @@ export default function ArgumentPage() {
                     <Link
                       className="arg-item"
                       key={step.anchor}
-                      href={`/${step.paper}#${step.anchor}`}
+                      href={`${paperHref(byId(step.paper)!)}#${step.anchor}`}
                     >
                       <p className="arg-t">{title}</p>
                       <span className="arg-lab">{label}</span>

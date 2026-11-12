@@ -1,13 +1,25 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getContent, readingMinutes } from '@/lib/content'
-import { papers, SITE } from '@/lib/papers'
+import { documents, paperHref, papers, SITE, studies, works, type Paper } from '@/lib/papers'
 
 export const metadata: Metadata = {
-  title: `${SITE.name} — a three-paper series`,
+  title: `${SITE.name} — a three-paper series and its studies`,
   description: SITE.tagline,
   alternates: { canonical: '/' },
-  openGraph: { title: `${SITE.name} — a three-paper series`, description: SITE.tagline, url: '/', type: 'website' },
+  openGraph: {
+    title: `${SITE.name} — a three-paper series and its studies`,
+    description: SITE.tagline,
+    url: '/',
+    type: 'website',
+    images: [{ url: '/assets/og-card.png', width: 1200, height: 630, alt: SITE.tagline }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE.name} — a three-paper series and its studies`,
+    description: SITE.tagline,
+    images: ['/assets/og-card.png'],
+  },
 }
 
 const seriesJsonLd = {
@@ -15,21 +27,78 @@ const seriesJsonLd = {
   '@type': 'CreativeWorkSeries',
   name: SITE.name,
   description: SITE.tagline,
-  url: SITE.origin,
+  url: `${SITE.origin}/`,
   author: { '@type': 'Person', name: SITE.author },
-  hasPart: papers.map((p) => ({
-    '@type': 'ScholarlyArticle',
-    name: p.title,
-    url: `${SITE.origin}/${p.id}`,
-    position: p.numeral,
-  })),
+  hasPart: [
+    ...documents.map((p) => ({
+      '@type': 'ScholarlyArticle',
+      name: p.title,
+      url: `${SITE.origin}${paperHref(p)}`,
+      position: p.numeral,
+    })),
+    ...studies.map((p) => ({
+      '@type': 'ScholarlyArticle',
+      name: p.title,
+      url: `${SITE.origin}${paperHref(p)}`,
+    })),
+  ],
+}
+
+function DocCard({ p, stats }: { p: Paper; stats: ReturnType<typeof getContent>['stats'] }) {
+  return (
+    <Link className="doc" href={paperHref(p)} data-tone={p.tone}>
+      <div className="doc-rn">
+        {p.numeral}
+        <small>{p.kind === 'document' ? p.key : 'Study'}</small>
+      </div>
+      <div className="doc-main">
+        <p className="doc-key">{p.discipline}</p>
+        <h2 className="doc-title">{p.title}</h2>
+        <p className="doc-sub">{p.subtitle}</p>
+        {p.kind === 'document' && <p className="doc-q">{p.question}</p>}
+      </div>
+
+      <div className="doc-side">
+        <dl className="doc-flow">
+          <dt>Takes</dt>
+          <dd>{p.takes}</dd>
+          <dt>Gives</dt>
+          <dd>{p.gives}</dd>
+        </dl>
+
+        <p className="doc-figures">
+          <span>
+            <b>{stats.sections}</b> sections
+          </span>
+          {stats.theorems > 0 && (
+            <span>
+              <b>{stats.theorems}</b> statements
+            </span>
+          )}
+          {stats.equations > 0 && (
+            <span>
+              <b>{stats.equations}</b> equations
+            </span>
+          )}
+          <span>
+            <b>{stats.references}</b> references
+          </span>
+          <span>
+            <b>{readingMinutes(stats.words)}</b> min
+          </span>
+        </p>
+      </div>
+    </Link>
+  )
 }
 
 export default function Home() {
-  const stats = papers.map((p) => ({ p, s: getContent(p.id).stats }))
-  const totalWords = stats.reduce((n, x) => n + x.s.words, 0)
-  const totalEq = stats.reduce((n, x) => n + x.s.equations, 0)
-  const totalThm = stats.reduce((n, x) => n + x.s.theorems, 0)
+  const docStats = papers.map((p) => ({ p, s: getContent(p.id).stats }))
+  const studyStats = studies.map((p) => ({ p, s: getContent(p.id).stats }))
+  const allStats = works.map((p) => getContent(p.id).stats)
+  const totalWords = allStats.reduce((n, s) => n + s.words, 0)
+  const totalEq = allStats.reduce((n, s) => n + s.equations, 0)
+  const totalThm = allStats.reduce((n, s) => n + s.theorems, 0)
 
   return (
     <>
@@ -43,8 +112,9 @@ export default function Home() {
           Start from <em>A = A</em>. See how little freedom the universe has left.
         </h1>
         <p className="hero-sub">
-          Three papers, read in order: an argument from three premises to five postulates, a proof
-          that those postulates admit exactly one four-manifold, and an attempt to put physics on it.
+          A three-paper series and its studies. Read the papers in order: an argument from three
+          premises to five postulates, a proof that those postulates admit exactly one four-manifold,
+          and an attempt to put physics on it.
         </p>
         <p className="hero-meta">
           <span>{totalWords.toLocaleString()} words</span>
@@ -52,54 +122,24 @@ export default function Home() {
           <span>{totalEq} numbered equations</span>
           <span>{readingMinutes(totalWords)} minutes end to end</span>
         </p>
+        <p className="hero-note">Across the series and its studies.</p>
+        <div className="btn-row">
+          <Link className="btn btn-solid" href="/argument/">
+            The argument in one page
+          </Link>
+        </div>
 
       </section>
 
       <section className="chain shell" aria-label="The three documents">
-        {stats.map(({ p, s }) => (
-          <Link className="doc" href={`/${p.id}`} key={p.id} data-tone={p.tone}>
-            <div className="doc-rn">
-              {p.numeral}
-              <small>{p.key}</small>
-            </div>
-            <div className="doc-main">
-              <p className="doc-key">{p.discipline}</p>
-              <h2 className="doc-title">{p.title}</h2>
-              <p className="doc-sub">{p.subtitle}</p>
-              <p className="doc-q">{p.question}</p>
-            </div>
+        {docStats.map(({ p, s }) => (
+          <DocCard key={p.id} p={p} stats={s} />
+        ))}
+      </section>
 
-            <div className="doc-side">
-              <dl className="doc-flow">
-                <dt>Takes</dt>
-                <dd>{p.takes}</dd>
-                <dt>Gives</dt>
-                <dd>{p.gives}</dd>
-              </dl>
-
-              <p className="doc-figures">
-                <span>
-                  <b>{s.sections}</b> sections
-                </span>
-                {s.theorems > 0 && (
-                  <span>
-                    <b>{s.theorems}</b> statements
-                  </span>
-                )}
-                {s.equations > 0 && (
-                  <span>
-                    <b>{s.equations}</b> equations
-                  </span>
-                )}
-                <span>
-                  <b>{s.references}</b> references
-                </span>
-                <span>
-                  <b>{readingMinutes(s.words)}</b> min
-                </span>
-              </p>
-            </div>
-          </Link>
+      <section className="chain shell" aria-label="Studies" style={{ borderTop: 0 }}>
+        {studyStats.map(({ p, s }) => (
+          <DocCard key={p.id} p={p} stats={s} />
         ))}
       </section>
 
@@ -158,12 +198,12 @@ export default function Home() {
           <p>
             Every paper is published here in full: the same sections, the same numbering, the same
             equations as the deposited PDF. The web edition adds contents, cross-reference previews
-            and search across all three documents. The PDF and the LaTeX source are one click away on
-            every paper.
+            and search across the series and its studies. The PDF and the LaTeX source are one click
+            away on every paper.
           </p>
         </div>
         <div className="btn-row">
-          {papers.map((p) => (
+          {works.map((p) => (
             <a className="btn" key={p.id} href={p.pdf}>
               {p.title} (PDF)
             </a>
