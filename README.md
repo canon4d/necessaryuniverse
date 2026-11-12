@@ -1,12 +1,12 @@
 # Necessary Universe
 
-**A three-document research series arguing, from first principles, that reality is necessarily a non-orientable S³-bundle over S¹ — the "Klein Block" — and testing what physics that topology can support.**
+**A three-document research series, and the studies that take it as given, arguing from first principles that reality is necessarily a non-orientable S³-bundle over S¹ — the "Klein Block" — and testing what physics that topology can support.**
 
 [![Live Site](https://img.shields.io/badge/site-necessaryuniverse.com-black)](https://necessaryuniverse.com)
 [![Built with Next.js](https://img.shields.io/badge/built%20with-Next.js%2016-000000?logo=next.js)](https://nextjs.org)
 [![Deployed on Vercel](https://img.shields.io/badge/deployed%20on-Vercel-000000?logo=vercel)](https://vercel.com)
 
-This repository is the source for **[necessaryuniverse.com](https://necessaryuniverse.com)** — a static Next.js site that presents the three papers, renders their math natively in the browser (no PDF viewer required), and cross-links every claim, theorem, and open problem between them.
+This repository is the source for **[necessaryuniverse.com](https://necessaryuniverse.com)** — a static Next.js site that presents the three papers and their studies, renders their math natively in the browser (no PDF viewer required), and cross-links every claim, theorem, and open problem between them.
 
 ---
 
@@ -14,6 +14,7 @@ This repository is the source for **[necessaryuniverse.com](https://necessaryuni
 
 - [What this is](#what-this-is)
 - [The three documents](#the-three-documents)
+- [Studies](#studies)
 - [Site features](#site-features)
 - [Tech stack](#tech-stack)
 - [Project structure](#project-structure)
@@ -36,39 +37,49 @@ Necessary Universe is an independent research program, written entirely outside 
 2. **Prove mathematically** that those closure conditions, taken as strict hypotheses, leave exactly one smooth four-manifold standing: a non-orientable S³-bundle over S¹.
 3. **Test dynamically** whether that fixed topology can actually host fermions, gauge fields, anomaly cancellation, and a coherent thermodynamic arrow — and name, explicitly, every place where it currently cannot.
 
-Each paper is written to stand on its own, but they are designed to be read as a chain: Document I hands its five postulates to Document II as hypotheses; Document II hands its topological uniqueness result to Document III as fixed background geometry. The website's job is to make that chain of dependency legible — every theorem, postulate, and open problem is a deep link, so a claim in Document III that depends on Document I can be checked in two clicks.
+Each paper is written to stand on its own, but the three documents are designed to be read as a chain: Document I hands its five postulates to Document II as hypotheses; Document II hands its topological uniqueness result to Document III as fixed background geometry. Studies are not a fourth document. They take that closed architecture as given and carry one consequence further. The website's job is to make that chain of dependency legible — every theorem, postulate, and open problem is a deep link, so a claim in Document III that depends on Document I can be checked in two clicks.
 
 ## The three documents
 
 | | Document | Discipline | What it takes | What it gives |
 |---|---|---|---|---|
-| **I — Why** | [*Shape of Reality*: The Necessity of the Zero-Energy Klein Block](https://necessaryuniverse.com/why) | Philosophy of Physics | Three declared premises | Five closure-admissible postulates |
-| **II — What** | [*The Klein Block*: Topological Uniqueness of the Non-Orientable S³-Bundle over S¹](https://necessaryuniverse.com/what) | Differential Topology | The five postulates, as strict hypotheses | Exactly one admissible four-manifold |
-| **III — How** | [*Twisted Dynamics on the Klein Block*: A Conditional Framework for Kinematic Descent, Nodal Defect Structure, and Anomaly Constraints](https://necessaryuniverse.com/how) | Mathematical Physics | The fixed topology of Document II | Descent conditions, defect structure, and a ledger of named open problems |
+| **I — Why** | [*Shape of Reality*: The Necessity of the Zero-Energy Klein Block](https://necessaryuniverse.com/why/) | Philosophy of Physics | Three declared premises | Five closure-admissible postulates |
+| **II — What** | [*The Klein Block*: Topological Uniqueness of the Non-Orientable S³-Bundle over S¹](https://necessaryuniverse.com/what/) | Differential Topology | The five postulates, as strict hypotheses | Exactly one admissible four-manifold |
+| **III — How** | [*Twisted Dynamics on the Klein Block*: A Conditional Framework for Kinematic Descent, Nodal Defect Structure, and Anomaly Constraints](https://necessaryuniverse.com/how/) | Mathematical Physics | The fixed topology of Document II | Descent conditions, defect structure, and a ledger of named open problems |
 
 Each is also archived on Zenodo with its own DOI:
 
-| Document | DOI |
+| Paper | DOI |
 |---|---|
 | I — Shape of Reality | [10.5281/zenodo.22766109](https://doi.org/10.5281/zenodo.22766109) |
 | II — The Klein Block | [10.5281/zenodo.22766247](https://doi.org/10.5281/zenodo.22766247) |
 | III — Twisted Dynamics on the Klein Block | [10.5281/zenodo.22766260](https://doi.org/10.5281/zenodo.22766260) |
+| Studies I — Klein Block Studies I | [10.5281/zenodo.24143287](https://doi.org/10.5281/zenodo.24143287) |
+
+## Studies
+
+Studies are a separate shelf. They are not Document IV, and the series is not four papers.
+
+| | Study | Discipline | What it takes | What it gives |
+|---|---|---|---|---|
+| **Studies I** | [*Klein Block Studies I*: Topological Necessity of Conformal Nodal Hypersurfaces on the Non-Orientable S³-Bundle over S¹ and the Free-Boundary Variational Selection of Conformally Regular Solutions](https://necessaryuniverse.com/studies/klein-block-studies-i/) | Mathematical Cosmology | The fixed topology of Document II and the free-boundary action principle | A forced nodal hypersurface, a variational face condition, conditional smooth descent, and an exact Pell-tower mode classification |
 
 Current content, measured directly from source (`npm run content`):
 
-| Document | Sections | Theorems/Props | Numbered equations | Tables | References |
+| Paper | Sections | Theorems/Props | Numbered equations | Tables | References |
 |---|---:|---:|---:|---:|---:|
 | I — Why | 21 | — | — | 5 | 15 |
 | II — What | 14 | 37 | 10 | 2 | 12 |
 | III — How | 18 | 32 | 101 | 8 | 22 |
+| Studies I | 11 | 69 | 34 | 3 | 32 |
 
 (Document I is prose argument with no numbered theorem environments or display equations; its rigor lives in the premise/postulate structure, not in formal proof.)
 
 ## Site features
 
 - **Native math rendering.** Every equation, theorem, and table is parsed out of the `.tex` sources at build time and rendered with [KaTeX](https://katex.org/) — no PDF embed, no MathJax runtime cost, fully indexable text.
-- **Cross-paper deep linking.** Theorems, postulates, and open problems (`OP-1` … `OP-25`) are addressable anchors, so `/argument` can jump straight into the exact passage of any of the three documents that a given claim depends on.
-- **Full-text search** across all three papers (⌘K / Ctrl+K), built from a flat search index generated alongside the reading content.
+- **Cross-paper deep linking.** Theorems, postulates, and open problems (`OP-1` … `OP-25`) are addressable anchors, so `/argument/` can jump straight into the exact passage of any of the three documents that a given claim depends on, and into Studies I where the topology forces the nodal hypersurface.
+- **Full-text search** across the series and its studies (⌘K / Ctrl+K), built from a flat search index generated alongside the reading content.
 - **One-click citation export** — BibTeX, APA, and RIS — generated per document from its DOI metadata.
 - **Interactive diagrams** (e.g. the mapping-torus / "twist" visualization) built as plain inline SVG, no charting library.
 - **Podcast companion** — a short spoken walkthrough of each document, with its own player and transcript-adjacent stats.
@@ -89,7 +100,7 @@ Current content, measured directly from source (`npm run content`):
 
 ```
 .
-├── app/                    # Next.js App Router pages (/, /why, /what, /how, /argument, /podcasts)
+├── app/                    # Next.js App Router pages (/, /why/, /what/, /how/, /studies/, /argument/, /podcasts/)
 │   ├── robots.ts           # /robots.txt — explicit search + AI crawler allowlist
 │   ├── sitemap.ts          # /sitemap.xml
 │   └── llms.txt/route.ts   # /llms.txt — structured summary for AI agents (llmstxt.org)
@@ -101,10 +112,11 @@ Current content, measured directly from source (`npm run content`):
 │   ├── content.ts          # Typed accessors over content/papers.json
 │   ├── math.ts             # KaTeX rendering helpers
 │   └── podcasts.ts         # Podcast episode metadata
-├── papers-src/             # The actual LaTeX source of all three papers (source of truth)
+├── papers-src/             # LaTeX source of the three papers and the studies (source of truth)
 │   ├── shape-of-reality.tex
 │   ├── the-klein-block.tex
-│   └── twisted-dynamics-on-the-klein-block.tex
+│   ├── twisted-dynamics-on-the-klein-block.tex
+│   └── klein-block-studies-i.tex
 ├── public/
 │   ├── papers/*.pdf        # Compiled PDFs, served for download
 │   ├── latex/*.tex         # Raw .tex, served for download
@@ -178,7 +190,7 @@ The site deploys to Vercel (`vercel.json`): every push runs `npm run build` and 
 
 ## Citing this work
 
-Each paper page includes a **Cite** panel with ready-to-copy BibTeX, APA, and RIS. The BibTeX keys are `CanonWhy`, `CanonWhat`, and `CanonHow`. Example (Document I — Why):
+Each paper page includes a **Cite** panel with ready-to-copy BibTeX, APA, and RIS. The BibTeX keys are `CanonWhy`, `CanonWhat`, `CanonHow`, and `CanonStudiesI`. Document citations say "Document {numeral} of the Necessary Universe series". Study citations say "Klein Block Studies I, Necessary Universe series". Example (Document I — Why):
 
 ```bibtex
 @misc{CanonWhy,
