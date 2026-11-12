@@ -629,7 +629,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .eq:hover .eq-copy, .eq-copy:focus-visible { opacity: 1; }
 .eq-copy:hover { color: var(--ink); border-color: var(--rule-2); }
-.eq:target .eq-body, .eq-anchor:target + .eq-body { background: var(--accent-wash); }
+.eq-anchor {
+  position: absolute; width: 0; height: 0; scroll-margin-top: 6rem;
+}
+.eq:target .eq-body, .eq-anchor:target ~ .eq-body { background: var(--accent-wash); }
 
 /* ------------------------------------------------- theorem-like statements */
 

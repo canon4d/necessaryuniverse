@@ -148,8 +148,14 @@ function block(b: Block, ctx: RenderCtx): React.ReactNode {
 
     case 'math': {
       const id = b.anchor ? ctx.idFor(b.anchor) : undefined
+      const rowAnchors = (b.nums ?? [])
+        .map((n) => `eq-${n}`)
+        .filter((a) => a !== b.anchor)
       return (
         <div className="eq" id={id}>
+          {rowAnchors.map((a) => (
+            <span key={a} id={ctx.idFor(a)} className="eq-anchor" />
+          ))}
           <div
             className="eq-body"
             dangerouslySetInnerHTML={{ __html: renderMath(b.tex, true) }}

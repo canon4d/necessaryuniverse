@@ -26,7 +26,10 @@ export type MathBlk = {
   copy?: string
   /** Row equation numbers when a multi-row align is numbered row by row. */
   nums?: string[]
+  /** Every align line, including unnumbered ones. */
   rows?: string[]
+  /** Only the lines that received a number. Parallel to `nums`. */
+  numbered_rows?: string[]
 }
 export type Theorem = {
   kind: 'theorem'; env: string; name: string; num: string; anchor: string

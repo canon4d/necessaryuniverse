@@ -895,7 +895,7 @@ def numbered_align_block(body: str, ctx):
     Mirror that: one block, one explicit \\tag per numbered row, so the web
     equation numbers match the PDF exactly.  KaTeX draws the tags itself."""
     rows = split_align_rows(body)
-    tagged, plain_rows, nums, anchor = [], [], [], None
+    tagged, plain_rows, nums, numbered_rows, anchor = [], [], [], [], None
     for r in rows:
         skip = re.search(r"\\(nonumber|notag)\b", r) is not None
         lm = re.search(r"\\label\{([^}]*)\}", r)
@@ -906,16 +906,19 @@ def numbered_align_block(body: str, ctx):
             continue
         ctx.eqcount += 1
         num = str(ctx.eqcount)
+        row_anchor = f"eq-{num}"
         nums.append(num)
+        numbered_rows.append(cleaned)
         if anchor is None:
-            anchor = f"eq-{num}"
+            anchor = row_anchor
         if lm:
-            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": anchor, "env": "equation"}
+            ctx.labels[lm.group(1)] = {"num": num, "kind": "Equation", "anchor": row_anchor, "env": "equation"}
         tagged.append(cleaned + " \\tag{" + num + "}")
     tex = "\\begin{align}\n" + " \\\\\n".join(tagged) + "\n\\end{align}"
     copy = "\\begin{aligned}\n" + " \\\\\n".join(plain_rows) + "\n\\end{aligned}"
     return {"kind": "math", "tex": tex, "copy": copy, "num": None,
-            "nums": nums, "rows": [r for r in plain_rows], "anchor": anchor}
+            "nums": nums, "rows": list(plain_rows), "numbered_rows": numbered_rows,
+            "anchor": anchor}
 
 
 def handle_env(env, body, ctx, doc):
@@ -1348,8 +1351,11 @@ def build_index(pid, blocks):
                             "t": plain(b["title"]) if b.get("title") else b["name"],
                             "s": section, "x": excerpt(b["blocks"], 150)})
             elif k == "math" and b.get("nums"):
-                for n_, r_ in zip(b["nums"], b["rows"]):
-                    out.append({"p": pid, "a": b["anchor"], "k": "Equation", "n": n_,
+                # `rows` keeps every align line, including \\nonumber/\\notag.
+                # Numbers line up only with the numbered lines, in that order.
+                src = b.get("numbered_rows") or b["rows"]
+                for n_, r_ in zip(b["nums"], src):
+                    out.append({"p": pid, "a": f"eq-{n_}", "k": "Equation", "n": n_,
                                 "t": "Equation " + n_, "s": section,
                                 "x": re.sub(r"\s+", " ", r_.replace("&", "")).strip()[:90]})
             elif k == "math" and b.get("num"):

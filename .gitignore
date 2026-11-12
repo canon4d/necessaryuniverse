@@ -1,5 +1,5 @@
 .next/
 node_modules/
-out/podcasts/
+out/podcasts/*.m4a
 next-env.d.ts
 *.tsbuildinfo
