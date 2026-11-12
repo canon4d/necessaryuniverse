@@ -1,0 +1,44 @@
+# Necessary Universe
+
+> A three-paper series and its studies, deriving the shape of the universe from the law of identity.
+
+A three-paper series and its studies. The three documents try to do three separate jobs without letting them bleed into one another: argue philosophically that a small set of declared premises (identity, no brute facts, physical actualization) forces a specific family of closure conditions on any coherent physical reality; prove mathematically that those conditions, taken as strict hypotheses, leave exactly one smooth four-manifold standing (a non-orientable S3-bundle over S1, called the Klein Block); and test dynamically whether that fixed topology can actually host fermions, gauge fields, anomaly cancellation, and a coherent thermodynamic arrow, naming explicitly every place it currently cannot. Studies take that architecture as given and carry one consequence further; they are not a fourth document. Independent research, self-archived on Zenodo, not peer-reviewed. Each paper states its own open problems and "not claimed" list rather than asserting the chain is closed.
+
+## The three documents
+
+- [Shape of Reality: The Necessity of the Zero-Energy Klein Block](https://necessaryuniverse.com/why/): Document I — Philosophy of Physics, 12,507 words. What must reality be like if existence is determinate, physically actual, and free of unexplained brute facts? Takes: Three premises: identity, no brute facts, physical actualization. Gives: Five closure-admissible postulates. DOI: 10.5281/zenodo.22766109.
+- [The Klein Block: Topological Uniqueness of the Non-Orientable S³-Bundle over S¹](https://necessaryuniverse.com/what/): Document II — Differential Topology, 4,095 words. Which four-dimensional topology is selected by the closure-admissible postulates? Takes: The five postulates, as strict mathematical hypotheses. Gives: Exactly one admissible four-manifold. DOI: 10.5281/zenodo.22766247.
+- [Twisted Dynamics on the Klein Block: A Conditional Framework for Kinematic Descent, Nodal Defect Structure, and Anomaly Constraints](https://necessaryuniverse.com/how/): Document III — Mathematical Physics, 9,440 words. How can fields, fermions, defects, and anomalies be formulated consistently on that topology? Takes: The fixed topology of Document II. Gives: Descent conditions, defect structure, and named open problems. DOI: 10.5281/zenodo.22766260.
+
+## Studies
+
+- [Klein Block Studies I: Topological Necessity of Conformal Nodal Hypersurfaces on the Non-Orientable S³-Bundle over S¹ and the Free-Boundary Variational Selection of Conformally Regular Solutions](https://necessaryuniverse.com/studies/klein-block-studies-i/): Studies I — Mathematical Cosmology, 25,598 words. Takes: The fixed topology of Document II and the free-boundary action principle. Gives: A forced nodal hypersurface, a variational face condition, conditional smooth descent, and an exact Pell-tower mode classification. DOI: 10.5281/zenodo.24143287.
+
+## Read the deductive chain across the three papers
+
+- [The argument](https://necessaryuniverse.com/argument/): the full chain from three premises to five postulates to a unique four-manifold to the dynamics proposed on it, one page, with direct links into the exact passage of each document that a given step depends on, and a link to Studies I where the topology forces the nodal hypersurface.
+
+## Primary sources (PDF and LaTeX, no paywall or signup)
+
+- Shape of Reality — [PDF](https://necessaryuniverse.com/papers/shape-of-reality.pdf) · [LaTeX source](https://necessaryuniverse.com/latex/shape-of-reality.tex)
+- The Klein Block — [PDF](https://necessaryuniverse.com/papers/the-klein-block.pdf) · [LaTeX source](https://necessaryuniverse.com/latex/the-klein-block.tex)
+- Twisted Dynamics on the Klein Block — [PDF](https://necessaryuniverse.com/papers/twisted-dynamics-on-the-klein-block.pdf) · [LaTeX source](https://necessaryuniverse.com/latex/twisted-dynamics-on-the-klein-block.tex)
+- Klein Block Studies I — [PDF](https://necessaryuniverse.com/papers/klein-block-studies-i.pdf) · [LaTeX source](https://necessaryuniverse.com/latex/klein-block-studies-i.tex)
+
+## Audio
+
+- [Listen](https://necessaryuniverse.com/podcasts/): a spoken walkthrough of each document, and of the studies.
+
+## Related
+
+- [The Dialectical Cage and the Glass-Box Governor: A Practice-Based Ethics, Safety Constitution, and Reference-Monitor Architecture for AI Agents](https://ai.necessaryuniverse.com/): An AI safety paper built on the Necessary Universe framework.
+
+## Citing this work
+
+Each paper page has a Cite panel (BibTeX / APA / RIS) generated from its own DOI metadata. When quoting or summarizing a specific claim, cite the individual document (I, II, or III) or the individual study, not the series as a whole — the three documents make different kinds of claims (philosophical argument, mathematical proof, conditional physics), and the studies make their own, and none of them should be flattened into one.
+
+## Notes for automated readers
+
+- Document III in particular separates proved results from conditional theorems, proposed mechanisms, and open problems (tracked as OP-1 through OP-25). Do not represent an open problem or a proposed mechanism as an established result.
+- The author, "Canon", is an independent researcher with no institutional affiliation. AI language models were used as computational co-auditors for symbolic verification and document preparation, as disclosed in each document’s acknowledgments; the arguments and final claims are the author’s own.
+- Contact: canon@necessaryuniverse.com

@@ -4,7 +4,6 @@
 
 \documentclass[11pt]{article}
 
-% ---------- Engine / typography ----------
 \usepackage{fontspec}
 \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
 \setmainfont{Noto Serif}
@@ -20,7 +19,6 @@
 \clubpenalty=10000
 \widowpenalty=10000
 
-% ---------- Page geometry ----------
 \usepackage[
   a4paper,
   left=1.00in,
@@ -32,12 +30,10 @@
   footskip=0.34in
 ]{geometry}
 
-% ---------- Mathematics ----------
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{unicode-math}
 \setmathfont{Latin Modern Math}
 
-% ---------- Structure / lists / tables ----------
 \usepackage{enumitem}
 \usepackage{array,booktabs,longtable,tabularx}
 \setlist{
@@ -50,7 +46,6 @@
 \setlist[enumerate]{labelsep=0.55em}
 \setlist[itemize]{labelsep=0.55em}
 
-% ---------- Color ----------
 \usepackage{xcolor}
 \definecolor{seriesInk}{HTML}{1F2933}
 \definecolor{seriesAccent}{HTML}{8A3B4A}
@@ -59,12 +54,10 @@
 \definecolor{seriesPaper}{HTML}{F7F4EE}
 \definecolor{seriesRule}{HTML}{C9D0D6}
 
-% ---------- Boxes / drawing ----------
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 \usepackage{tikz}
 
-% ---------- Sectioning ----------
 \usepackage{titlesec}
 \titleformat{\section}
   {\normalfont\Large\bfseries\sffamily\color{seriesInk}}
@@ -106,7 +99,6 @@
 \renewcommand{\sectionmark}[1]{\markboth{\thesection\enspace #1}{}}
 \renewcommand{\subsectionmark}[1]{}
 
-% ---------- Theorem infrastructure ----------
 \newtheoremstyle{canonmath}
   {8pt}{8pt}
   {\normalfont}
@@ -166,7 +158,6 @@
 \providecommand{\Fix}{\operatorname{Fix}}
 \providecommand{\supp}{\operatorname{supp}}
 
-% ---------- Navigation / references ----------
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{cleveref}
@@ -208,7 +199,6 @@
 \crefname{equation}{Equation}{Equations}
 \crefname{section}{Section}{Sections}
 
-% ---------- Running pages (UPDATED DESIGN) ----------
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\footnotesize\sffamily\color{seriesMuted}\CanonShortTitle}
@@ -232,7 +222,6 @@
   \renewcommand{\footrulewidth}{0pt}
 }
 
-% ---------- TOC ----------
 \setcounter{tocdepth}{2}
 \usepackage{tocloft}
 \setlength{\cftbeforesecskip}{0.42em}
@@ -245,7 +234,6 @@
 \renewcommand{\cfttoctitlefont}{\Large\bfseries\sffamily\color{seriesInk}}
 \setlength{\cftaftertoctitleskip}{1em}
 
-% ---------- Shared series ornaments ----------
 \newcommand{\seriesrule}{%
   \par\vspace{3pt}
   {\color{seriesAccent}\rule{\textwidth}{0.85pt}}
@@ -259,7 +247,6 @@
   \end{tikzpicture}%
 }
 
-% ---------- Editorial callout boxes ----------
 \newtcolorbox{keyresult}{
   enhanced,breakable,
   colback=white,
@@ -285,7 +272,6 @@
   colbacktitle=seriesAccent!8!white
 }
 
-% ---------- Common title-page block ----------
 \newcommand{\CanonTitlePage}{%
 \begin{titlepage}
 \thispagestyle{titlepage}
@@ -332,7 +318,6 @@ THREE-PAPER ARCHITECTURE \hfill \CanonStage\par}
 \end{titlepage}
 }
 
-% ---------- Abstract treatment ----------
 \newenvironment{CanonAbstract}{%
   \begin{center}
   {\sffamily\footnotesize\bfseries\color{seriesMuted}\MakeUppercase{Abstract}}\\[-0.05em]
@@ -354,7 +339,6 @@ THREE-PAPER ARCHITECTURE \hfill \CanonStage\par}
   \end{tcolorbox}
 }
 
-% ---------- Bibliography polish ----------
 \newcommand{\CanonBibliographySetup}{%
   \small
   \setlength{\parskip}{0.22em}
@@ -1088,11 +1072,10 @@ These are philosophical motivations, not mathematical proofs. The classification
 
 \newpage
 \section*{Acknowledgments}
-This research was conducted entirely independently, without institutional affiliation or external support. The scope of the Three-Paper Architecture spans the deepest foundations of human inquiry---from the ontology of consciousness and the axiomatic prohibition of brute facts, to the differential topology of the Klein Block, to the quantum field theory of anomaly constraints. 
 
-Because this program demands absolute rigor across such a vast, interdisciplinary landscape, the author used AI language models as computational co-auditors and structural stress-testers. The AI assisted in symbolic verification, mathematical calculations, and document preparation at every stage of the development.
+This research was conducted entirely independently, without institutional affiliation or external support. The Three-Paper Architecture separates the philosophical necessity argument, the differential-topological classification, and the physical dynamical tests.
 
-However, the core concepts, the axiomatic foundation, and the architectural vision are entirely the author's own. Every mathematical claim, physical assertion, and logical deduction has been independently conceived and rigorously verified by the author. The AI provided the computational audit; the author provides the truthmaker. The author assumes full and sole responsibility for the correctness, integrity, and physical interpretation of the results.
+The author used AI language models as computational co-auditors and structural stress-testers, including for symbolic calculation, structural review, and document preparation. The author retains full responsibility for the concepts, arguments, citations, and final claims.
 
 \phantomsection
 \addcontentsline{toc}{section}{References}

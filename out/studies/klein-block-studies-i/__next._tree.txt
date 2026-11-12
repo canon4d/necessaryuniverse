@@ -1,0 +1,4 @@
+:HL["/_next/static/chunks/3mmxnhheqn-n1.css","style"]
+:HC["/",""]
+:HL["https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"studies","param":null,"prefetchHints":4160,"slots":{"children":{"name":"slug","param":{"type":"d","key":"klein-block-studies-i","siblings":[]},"prefetchHints":4192,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}}}},"staleTime":300,"buildId":"HGLfiFj6vQw8LLFkym0Nl"}
